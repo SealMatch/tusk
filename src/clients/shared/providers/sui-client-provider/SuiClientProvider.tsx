@@ -1,5 +1,5 @@
 "use client";
-import { networkConfig } from "@/shared/config";
+import { networkConfig } from "@/clients/shared/config";
 import { SuiClientProvider as SuiBaseClientProvider } from "@mysten/dapp-kit";
 import React from "react";
 
