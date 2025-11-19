@@ -1,5 +1,5 @@
 "use client";
-import { queryClientConfig } from "@/shared/config";
+import { queryClientConfig } from "@/clients/shared/config";
 import { QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 
