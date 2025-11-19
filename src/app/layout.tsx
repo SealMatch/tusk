@@ -1,6 +1,6 @@
-import { SuiClientProvider } from "@/shared/providers/sui-client-provider";
-import { TanstackQueryProvider } from "@/shared/providers/tanstack-query";
-import { WalletProvider } from "@/shared/providers/wallet-provider";
+import { SuiClientProvider } from "@/clients/shared/providers/sui-client-provider";
+import { TanstackQueryProvider } from "@/clients/shared/providers/tanstack-query";
+import { WalletProvider } from "@/clients/shared/providers/wallet-provider";
 import "@mysten/dapp-kit/dist/index.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";

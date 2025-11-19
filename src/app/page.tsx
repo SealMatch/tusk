@@ -1,6 +1,6 @@
 "use client";
-import { Button } from "@/shared/ui/button";
-import { formatAddress } from "@/shared/utils";
+import { Button } from "@/clients/shared/ui/button";
+import { formatAddress } from "@/clients/shared/utils";
 import { ConnectModal, useCurrentAccount } from "@mysten/dapp-kit";
 import { Wallet } from "lucide-react";
 import Image from "next/image";
