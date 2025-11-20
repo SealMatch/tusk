@@ -15,6 +15,7 @@ export async function POST(
     const body = await request.json();
 
     // 2. Validation
+    // TODO: 요청 데이터 유효성 검사 - LLM 요약본이 들어와야함
     const validatedData = embedRequestSchema.parse(body);
 
     // 3. Service 호출

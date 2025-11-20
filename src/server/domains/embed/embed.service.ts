@@ -3,6 +3,7 @@ import type { Result } from "@/server/shared/types/result.type";
 import type { EmbedResponse } from "./embed.type";
 
 class EmbedService {
+  // TODO: 요청 데이터 유효성 검사 - LLM 요약본이 들어와야함
   async createEmbedding(text: string): Promise<Result<EmbedResponse>> {
     try {
       const result = await geminiEmbeddingModel.embedContent(text);
