@@ -59,16 +59,6 @@ export const Header = () => {
 
           {/* Navigation */}
           <nav className="flex items-center gap-8">
-            <a
-              href="#"
-              className="text-white hover:text-white/80 transition-colors text-sm font-medium">
-              Home
-            </a>
-            <a
-              href="#"
-              className="text-white/70 hover:text-white transition-colors text-sm font-medium">
-              Docs
-            </a>
             <div className="wallet-button-wrapper">
               <ConnectButton />
             </div>
