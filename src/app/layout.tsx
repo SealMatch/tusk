@@ -30,12 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0D1117]`}>
         <TanstackQueryProvider>
           <SuiClientProvider>
             <WalletProvider>
-              <div className="flex flex-col h-screen bg-[#212121]">
-                <Header />
+              <div className="min-h-screen min-w-screen flex flex-col">
                 {children}
               </div>
             </WalletProvider>

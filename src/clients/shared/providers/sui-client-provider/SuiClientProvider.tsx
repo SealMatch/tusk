@@ -1,5 +1,5 @@
 "use client";
-import { networkConfig } from "@/clients/shared/config";
+import { NETWORK_CONFIG } from "@/clients/shared/config";
 import { SuiClientProvider as SuiBaseClientProvider } from "@mysten/dapp-kit";
 import React from "react";
 
@@ -9,7 +9,7 @@ export const SuiClientProvider = ({
   children: React.ReactNode;
 }) => {
   return (
-    <SuiBaseClientProvider networks={networkConfig} defaultNetwork="testnet">
+    <SuiBaseClientProvider networks={NETWORK_CONFIG} defaultNetwork="testnet">
       {children}
     </SuiBaseClientProvider>
   );
