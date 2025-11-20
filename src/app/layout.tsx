@@ -1,3 +1,4 @@
+import { Header } from "@/clients/shared/components";
 import { SuiClientProvider } from "@/clients/shared/providers/sui-client-provider";
 import { TanstackQueryProvider } from "@/clients/shared/providers/tanstack-query";
 import { WalletProvider } from "@/clients/shared/providers/wallet-provider";
@@ -32,7 +33,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <TanstackQueryProvider>
           <SuiClientProvider>
-            <WalletProvider>{children}</WalletProvider>
+            <WalletProvider>
+              <div className="flex flex-col h-screen bg-[#212121]">
+                <Header />
+                {children}
+              </div>
+            </WalletProvider>
           </SuiClientProvider>
         </TanstackQueryProvider>
       </body>
