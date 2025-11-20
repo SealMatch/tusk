@@ -4,7 +4,7 @@ import { Galaxy, SplitText } from "../atoms";
 
 export const MainIntroductionSection = () => {
   return (
-    <section className="relative w-screen min-h-[80vh] flex flex-col items-center justify-center overflow-hidden">
+    <section className="relative w-screen min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Galaxy
           mouseRepulsion={false}
@@ -18,7 +18,7 @@ export const MainIntroductionSection = () => {
       <div className="relative z-10 text-center">
         <SplitText
           text="Seal Match"
-          className="text-4xl text-zinc-50 font-bold mb-4"
+          className="text-7xl text-zinc-50 font-bold mb-4"
           delay={100}
           duration={0.6}
           ease="power3.out"

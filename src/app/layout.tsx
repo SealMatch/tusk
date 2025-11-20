@@ -1,4 +1,3 @@
-import { Header } from "@/clients/shared/components/header";
 import { SuiClientProvider } from "@/clients/shared/providers/sui-client-provider";
 import { TanstackQueryProvider } from "@/clients/shared/providers/tanstack-query";
 import { WalletProvider } from "@/clients/shared/providers/wallet-provider";
@@ -34,8 +33,7 @@ export default function RootLayout({
         <TanstackQueryProvider>
           <SuiClientProvider>
             <WalletProvider>
-              <div className="min-h-screen min-w-screen flex flex-col overflow-hidden">
-                <Header />
+              <div className="min-h-screen min-w-screen flex flex-col">
                 {children}
               </div>
             </WalletProvider>
