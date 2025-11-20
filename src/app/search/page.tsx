@@ -6,6 +6,7 @@ import { Textarea } from "@/clients/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -25,6 +26,7 @@ export default function SearchFormPage() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<SearchFormData>({
     resolver: zodResolver(searchSchema),
@@ -32,6 +34,11 @@ export default function SearchFormPage() {
       query: "",
     },
   });
+
+  // 페이지 로드 시 자동 포커스
+  useEffect(() => {
+    setFocus("query");
+  }, [setFocus]);
 
   const onSubmit = (data: SearchFormData) => {
     // 히스토리에 추가
@@ -52,12 +59,12 @@ export default function SearchFormPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       {/* 타이틀 */}
-      <h1 className="text-3xl font-bold mb-2 text-white tracking-tight">
+      <h1 className="text-3xl font-bold mb-10 text-white tracking-tight">
         어떤 인재를 찾으시나요?
       </h1>
-      <p className="text-gray-400 mb-8 text-center">
-        원하는 조건을 자연어로 입력해주세요
-      </p>
+      {/* <p className="text-gray-400 mb-8 text-center">
+        원하는 조건을 단어 또는 문장으로 입력해주세요
+      </p> */}
 
       {/* 검색 폼 */}
       <form
@@ -67,7 +74,7 @@ export default function SearchFormPage() {
         <div className="relative">
           <Textarea
             {...register("query")}
-            placeholder="예: React와 TypeScript 경험이 있는 3년차 이상 프론트엔드 개발자를 찾고 있습니다. AWS 경험이 있으면 좋겠습니다."
+            placeholder="원하는 조건을 단어 또는 문장으로 입력해주세요"
             className="min-h-32 pr-12 bg-[#2f2f2f] border-gray-700 text-white placeholder:text-gray-500 resize-none"
             onKeyDown={handleKeyDown}
           />
@@ -90,13 +97,13 @@ export default function SearchFormPage() {
         </p>
       </form>
 
-      {/* 예시 검색어 */}
+      {/* 추천 검색어 */}
       <div className="mt-8 w-full max-w-2xl">
-        <p className="text-sm text-gray-500 mb-3">예시 검색어</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="text-sm text-gray-500 mb-3">이런 검색어는 어떠세요?</p>
+        <div className="flex flex-col gap-2">
           {[
-            "Node.js 백엔드 개발자",
-            "React Native 모바일 개발",
+            "Node.js와 TypeScript 경험이 있는 백엔드 개발자가 필요해요",
+            "React Native와 TypeScript 경험이 있는 모바일 개발자가 필요해요",
             "데이터 분석가 Python",
             "DevOps 엔지니어 AWS",
           ].map((example) => (
@@ -105,7 +112,16 @@ export default function SearchFormPage() {
               variant="outline"
               size="sm"
               type="button"
-              className="text-gray-400 border-gray-700 hover:bg-gray-800"
+              className="
+                w-full 
+                justify-start text-left
+                h-auto py-3 px-4
+                whitespace-normal
+                text-white bg-transparent
+                border-none 
+                hover:bg-[#2f2f2f] hover:text-white
+                transition-colors
+              "
               onClick={() => {
                 addHistory(example);
                 const params = new URLSearchParams({ query: example });

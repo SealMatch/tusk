@@ -111,8 +111,13 @@ export default function SearchResultsPage() {
 
       {/* 결과 없음 */}
       {data?.results.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-400">검색 결과가 없습니다</p>
+        <div className="flex flex-col items-center justify-center py-20">
+          <p className="text-xl font-semibold text-gray-300 mb-2">
+            조건에 맞는 인재가 없어요
+          </p>
+          <p className="text-sm text-gray-500">
+            다른 키워드로 검색해보세요
+          </p>
         </div>
       )}
     </div>

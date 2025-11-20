@@ -2,7 +2,7 @@
 
 import { useSearchStore } from "@/clients/shared/stores";
 import { Button } from "@/clients/shared/ui/button";
-import { Search, Trash2 } from "lucide-react";
+import { PenSquare, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -24,10 +24,14 @@ export default function SearchLayout({
       {/* 좌측 사이드바 */}
       <aside className="w-64 bg-[#171717] border-r border-gray-800 flex flex-col">
         {/* 사이드바 헤더 */}
-        <div className="p-4 border-b border-gray-800">
+        <div className="p-4">
           <Link href="/search">
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <Search className="h-4 w-4" />새 검색
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-gray-300 hover:bg-[#2f2f2f] hover:text-white"
+            >
+              <PenSquare className="h-4 w-4" />
+              새 검색
             </Button>
           </Link>
         </div>
