@@ -1,5 +1,5 @@
-import { getSkillColor } from "@/clients/shared/types";
 import { cn } from "@/clients/shared/libs/styles.lib";
+import { getSkillColor } from "@/clients/shared/utils/skill.utils";
 
 interface SkillBadgeProps {
   skill: string;

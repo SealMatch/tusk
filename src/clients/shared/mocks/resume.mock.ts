@@ -8,9 +8,7 @@ import {
   mockPermissionStatusByCompany,
 } from "./company.mock";
 
-/**
- * 목데이터: 이력서 기본 정보
- */
+// 목데이터(이력서 기본 정보)
 const mockResumeDetails: Record<string, ResumeDetail> = {
   "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12": {
     blobId: "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12",

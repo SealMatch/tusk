@@ -1,10 +1,7 @@
 import type { PermissionStatus } from "@/clients/shared/types";
 
-/**
- * 테스트용 회사 지갑 주소
- * - 실제로는 @mysten/dapp-kit의 useCurrentAccount()로 가져옴
- * - 테스트 시 다른 지갑으로 연결하면 다른 회사로 로그인한 것
- */
+// 테스트용 회사 지갑 주소
+// 실제로는 @mysten/dapp-kit의 useCurrentAccount()로 가져옴
 export const TEST_COMPANY_ADDRESSES = {
   COMPANY_A: "0xCompanyA111111111111111111111111111111",
   COMPANY_B: "0xCompanyB222222222222222222222222222222",
@@ -12,30 +9,37 @@ export const TEST_COMPANY_ADDRESSES = {
 } as const;
 
 /**
- * 개발용: 현재 테스트 중인 회사
- * - 지갑 연결 없이 테스트할 때 사용
- * - 이 값을 변경하면 다른 회사로 로그인한 것처럼 테스트 가능
- * - 실제 지갑이 연결되면 이 값은 무시됨
+ * 개발용 현재 회사 주소
+ * - 환경변수 NEXT_PUBLIC_DEV_COMPANY로 설정 가능
+ * - 값: "A", "B", "C" 또는 직접 지갑 주소
+ * - 예: NEXT_PUBLIC_DEV_COMPANY=A
  */
-export const DEV_CURRENT_COMPANY = TEST_COMPANY_ADDRESSES.COMPANY_B;
-// export const DEV_CURRENT_COMPANY = TEST_COMPANY_ADDRESSES.COMPANY_B;
-// export const DEV_CURRENT_COMPANY = TEST_COMPANY_ADDRESSES.COMPANY_C;
+const getDevCompany = (): string | undefined => {
+  const devCompany = process.env.NEXT_PUBLIC_DEV_COMPANY;
+  if (!devCompany) return undefined;
 
-/**
- * 테스트용 회사 정보
- */
+  // A, B, C 단축키 지원
+  if (devCompany === "A") return TEST_COMPANY_ADDRESSES.COMPANY_A;
+  if (devCompany === "B") return TEST_COMPANY_ADDRESSES.COMPANY_B;
+  if (devCompany === "C") return TEST_COMPANY_ADDRESSES.COMPANY_C;
+
+  // 직접 주소 입력
+  return devCompany;
+};
+
+export const DEV_CURRENT_COMPANY = getDevCompany();
+
+// 테스트용 회사 정보
 export const TEST_COMPANIES = [
   { address: TEST_COMPANY_ADDRESSES.COMPANY_A, name: "A회사" },
   { address: TEST_COMPANY_ADDRESSES.COMPANY_B, name: "B회사" },
   { address: TEST_COMPANY_ADDRESSES.COMPANY_C, name: "C회사" },
 ] as const;
 
-/**
- * 목데이터: 회사별, 이력서별 권한 상태
- * - 키: 회사 지갑 주소
- * - 값: { blobId: PermissionStatus | null }
- * - 테스트 시 다른 지갑으로 연결하면 다른 권한 상태를 볼 수 있음
- */
+// 목데이터(회사별, 이력서별 권한 상태)
+// 키: 회사 지갑 주소
+// 값: { blobId: PermissionStatus | null }
+// 테스트 시 다른 지갑으로 연결하면 다른 권한 상태를 볼 수 있음
 export const mockPermissionStatusByCompany: Record<
   string,
   Record<string, PermissionStatus | null>
@@ -69,10 +73,8 @@ export const mockPermissionStatusByCompany: Record<
   },
 };
 
-/**
- * 현재 회사의 권한 상태를 가져오는 헬퍼 함수
- * - 등록되지 않은 회사는 모두 null (요청 안함) 반환
- */
+// 현재 회사의 권한 상태를 가져오는 헬퍼 함수
+// 등록되지 않은 회사는 모두 null (요청 안함) 반환
 export const getPermissionStatusForCompany = (
   companyAddress: string | undefined,
   blobId: string

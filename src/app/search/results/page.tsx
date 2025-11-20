@@ -12,7 +12,7 @@ export default function SearchResultsPage() {
   const router = useRouter();
   const query = searchParams.get("query") || "";
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["search", query],
     queryFn: async () => {
       // TODO: 실제 API 연동 시 axios 인스턴스 사용
@@ -33,6 +33,14 @@ export default function SearchResultsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-gray-400">검색 중...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-gray-400">검색 중 오류가 발생했습니다.</div>
       </div>
     );
   }

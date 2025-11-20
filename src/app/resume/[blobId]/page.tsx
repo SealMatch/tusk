@@ -9,9 +9,9 @@ import {
 } from "@/clients/shared/mocks";
 import type { PermissionStatus } from "@/clients/shared/types";
 import { Button } from "@/clients/shared/ui/button";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useCurrentAccount, ConnectModal } from "@mysten/dapp-kit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Download, Clock, CheckCircle, XCircle, Wallet } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -20,7 +20,6 @@ export default function ResumeDetailPage() {
   const blobId = params.blobId as string;
   const queryClient = useQueryClient();
   const currentAccount = useCurrentAccount();
-  const [isRequesting, setIsRequesting] = useState(false);
 
   // 실제 지갑이 연결되면 그 주소 사용, 아니면 개발용 테스트 회사 사용
   const companyAddress = currentAccount?.address || DEV_CURRENT_COMPANY;
@@ -38,12 +37,10 @@ export default function ResumeDetailPage() {
     mutationFn: () => requestPermission(blobId, companyAddress),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume", blobId, companyAddress] });
-      setIsRequesting(false);
     },
   });
 
   const handleRequestPermission = () => {
-    setIsRequesting(true);
     requestMutation.mutate();
   };
 
@@ -88,9 +85,26 @@ export default function ResumeDetailPage() {
 
   const { resume, myPermissionStatus } = data;
 
+  // 연결 여부 확인
+  const isConnected = !!(currentAccount?.address || DEV_CURRENT_COMPANY);
+
   // 권한 상태에 따른 단일 버튼 렌더링
   // 항상 하나의 버튼만 표시됨
   const renderActionButton = () => {
+    // 0. 미연결 상태 → 지갑 연결 버튼
+    if (!isConnected) {
+      return (
+        <ConnectModal
+          trigger={
+            <Button variant="default" className="w-full h-12 gap-2">
+              <Wallet className="h-4 w-4" />
+              지갑 연결하고 권한 요청
+            </Button>
+          }
+        />
+      );
+    }
+
     // 1. 승인됨 → PDF 다운로드 버튼
     if (myPermissionStatus === "approved") {
       return (
@@ -115,7 +129,7 @@ export default function ResumeDetailPage() {
     }
 
     // 2. 요청 중 → 권한 요청 중 버튼 (비활성화)
-    if (myPermissionStatus === "pending" || isRequesting) {
+    if (myPermissionStatus === "pending" || requestMutation.isPending) {
       return (
         <Button
           variant="outline"
