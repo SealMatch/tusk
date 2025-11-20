@@ -1,12 +1,11 @@
 "use client";
 
-import { Galaxy } from "../atoms";
 import { HeroButtonContainer, HeroContent } from "../molecules";
 
 export const HeroSection = () => {
   return (
     <section className="relative w-screen min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 z-0">
+      {/* <div className="absolute inset-0 z-0">
         <Galaxy
           mouseRepulsion={false}
           mouseInteraction={false}
@@ -15,7 +14,7 @@ export const HeroSection = () => {
           saturation={0.8}
           hueShift={240}
         />
-      </div>
+      </div> */}
       <div className="relative z-10 flex flex-col items-center gap-12 px-4">
         <HeroContent />
         <HeroButtonContainer />

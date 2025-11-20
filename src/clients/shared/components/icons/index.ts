@@ -1,2 +1,9 @@
+export { BoltIcon } from "./BoltIcon";
+export { CPUChipIcon } from "./CPUChipIcon";
+export { FunnelIcon } from "./FunnelIcon";
+export { HandRaiseIcon } from "./HandRaiseIcon";
+export { KeyIcon } from "./KeyIcon";
+export { LockIcon } from "./LockIcon";
 export { SearchIcon } from "./SearchIcon";
 export { ShieldIcon } from "./ShieldIcon";
+export { ViewFinderIcon } from "./ViewFinderIcon";

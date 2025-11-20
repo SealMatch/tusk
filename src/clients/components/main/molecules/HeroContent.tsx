@@ -16,8 +16,9 @@ export const HeroContent = () => {
         rootMargin="-100px"
         textAlign="center"
       />
+
       <SplitText
-        text="The safest and smartest recruitment matching platform based on blockchain"
+        text="The safest and smartest recruitment matching platform based on blockchain" // TODO: 글 길이를 줄이는 게 나을 듯
         className="text-3xl text-zinc-50/80 font-medium max-w-5xl"
         delay={100}
         duration={0.2}
