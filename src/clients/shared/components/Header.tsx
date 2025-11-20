@@ -1,7 +1,7 @@
 "use client";
 
 import { DEV_CURRENT_COMPANY, TEST_COMPANIES } from "@/clients/shared/mocks";
-import { Button } from "@/clients/shared/ui/button";
+import { Button } from "@/clients/shared/ui";
 import { formatAddress } from "@/clients/shared/utils/wallet.utils";
 import {
   useCurrentAccount,

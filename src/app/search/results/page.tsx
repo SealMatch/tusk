@@ -3,7 +3,7 @@
 import { SkillBadge } from "@/clients/shared/components";
 import { getMockSearchResponse } from "@/clients/shared/mocks";
 import type { ResumeResult } from "@/clients/shared/types";
-import { Badge } from "@/clients/shared/ui/badge";
+import { Badge } from "@/clients/shared/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 

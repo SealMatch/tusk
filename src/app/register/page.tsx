@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserStore } from "@/clients/shared/stores";
-import { Button } from "@/clients/shared/ui/button";
+import { Button } from "@/clients/shared/ui";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { Building2, User } from "lucide-react";
 import { useRouter } from "next/navigation";

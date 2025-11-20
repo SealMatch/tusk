@@ -8,7 +8,7 @@ import {
   simulatePdfDownload,
 } from "@/clients/shared/mocks";
 import type { PermissionStatus } from "@/clients/shared/types";
-import { Button } from "@/clients/shared/ui/button";
+import { Button } from "@/clients/shared/ui";
 import { useCurrentAccount, ConnectModal } from "@mysten/dapp-kit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download, Clock, CheckCircle, XCircle, Wallet } from "lucide-react";

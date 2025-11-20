@@ -1,8 +1,7 @@
 "use client";
 
 import { useSearchStore } from "@/clients/shared/stores";
-import { Button } from "@/clients/shared/ui/button";
-import { Textarea } from "@/clients/shared/ui/textarea";
+import { Button, Textarea } from "@/clients/shared/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchStore } from "@/clients/shared/stores";
-import { Button } from "@/clients/shared/ui/button";
+import { Button } from "@/clients/shared/ui";
 import { PenSquare, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
