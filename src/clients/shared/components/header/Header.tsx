@@ -1,8 +1,10 @@
 "use client";
-import { ConnectButton } from "@mysten/dapp-kit";
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export const Header = () => {
+  const currentAccount = useCurrentAccount();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -59,6 +61,11 @@ export const Header = () => {
 
           {/* Navigation */}
           <nav className="flex items-center gap-8">
+            {currentAccount && (
+              <Link href="/profile" className="text-white">
+                Profile
+              </Link>
+            )}
             <div className="wallet-button-wrapper cursor-pointer">
               <ConnectButton />
             </div>
