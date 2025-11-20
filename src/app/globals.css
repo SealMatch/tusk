@@ -120,3 +120,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Wallet Connect Button Styles */
+.wallet-button-wrapper button[data-dapp-kit] {
+  padding: 10px 20px !important;
+  font-size: 0.75rem !important;
+}
+
+.wallet-button-wrapper button[data-dapp-kit] div {
+  font-size: 0.75rem !important;
+}
