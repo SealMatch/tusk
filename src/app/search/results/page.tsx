@@ -1,5 +1,6 @@
 "use client";
 
+import { SkillBadge } from "@/clients/shared/components";
 import { getMockSearchResponse } from "@/clients/shared/mocks";
 import type { ResumeResult } from "@/clients/shared/types";
 import { Badge } from "@/clients/shared/ui/badge";
@@ -67,13 +68,7 @@ export default function SearchResultsPage() {
               <p className="text-xs text-gray-500 mb-1.5">기술 스택</p>
               <div className="flex flex-wrap gap-1.5">
                 {result.skills.slice(0, 3).map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant="secondary"
-                    className="text-xs bg-gray-700 hover:bg-gray-600"
-                  >
-                    {skill}
-                  </Badge>
+                  <SkillBadge key={skill} skill={skill} className="text-xs" />
                 ))}
                 {result.skills.length > 3 && (
                   <Badge
