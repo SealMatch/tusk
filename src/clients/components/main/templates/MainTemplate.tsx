@@ -1,4 +1,6 @@
+"use client";
 import { Header } from "@/clients/shared/components/header";
+import { useSectionSnap } from "@/clients/shared/hooks";
 import { Galaxy } from "../atoms";
 import {
   CandidatePrivacySection,
@@ -8,12 +10,14 @@ import {
 } from "../organisms";
 
 export const MainTemplate = () => {
+  useSectionSnap();
+
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Galaxy
           mouseRepulsion={false}
           mouseInteraction={false}

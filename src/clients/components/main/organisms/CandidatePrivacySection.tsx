@@ -5,7 +5,6 @@ import {
   KeyIcon,
   LockIcon,
 } from "@/clients/shared/components/icons";
-import { useScrollAnimation } from "@/clients/shared/hooks";
 import { FeatureCard, SplitText } from "../atoms";
 
 const CANDIDATE_PRIVACY_CONTENT = [
@@ -30,8 +29,6 @@ const CANDIDATE_PRIVACY_CONTENT = [
 ] as const;
 
 export const CandidatePrivacySection = () => {
-  const cardsRef = useScrollAnimation<HTMLDivElement>();
-
   return (
     <section className="relative w-screen h-screen snap-start snap-always flex flex-col items-center justify-center overflow-hidden px-4 py-20">
       <div className="relative z-10 max-w-7xl mx-auto w-full space-y-16">
@@ -59,17 +56,12 @@ export const CandidatePrivacySection = () => {
           {CANDIDATE_PRIVACY_CONTENT.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <div
+              <FeatureCard
                 key={index}
-                ref={(el) => {
-                  cardsRef.current[index] = el;
-                }}>
-                <FeatureCard
-                  title={feature.title}
-                  description={feature.description}
-                  icon={Icon}
-                />
-              </div>
+                title={feature.title}
+                description={feature.description}
+                icon={Icon}
+              />
             );
           })}
         </div>

@@ -5,7 +5,6 @@ import {
   DownArrowIcon,
   RightAngleIcon,
 } from "@/clients/shared/components/icons";
-import { useScrollAnimation } from "@/clients/shared/hooks";
 import { SectionDescriptionText, SplitText, StepCard } from "../atoms";
 
 const STEP_CONTENTS = [
@@ -30,13 +29,6 @@ const STEP_CONTENTS = [
 ];
 
 export const HowItWorksSection = () => {
-  const cardsRef = useScrollAnimation<HTMLDivElement>();
-  const arrowsRef = useScrollAnimation<SVGSVGElement>({
-    from: { opacity: 0, x: -20 },
-    to: { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" },
-    stagger: 0.2,
-  });
-
   return (
     <section className="relative w-screen h-screen snap-start snap-always flex flex-col items-center justify-around overflow-hidden px-4 py-20">
       <div className="relative z-10 max-w-7xl mx-auto w-full space-y-16">
@@ -67,17 +59,12 @@ export const HowItWorksSection = () => {
               key={index}
               className="flex flex-col md:flex-row items-center w-full md:w-auto">
               {/* Card */}
-              <StepCard step={step} index={index} cardsRef={cardsRef} />
+              <StepCard step={step} index={index} />
 
               {/* Arrow between cards - Desktop (horizontal) */}
               {index < STEP_CONTENTS.length - 1 && (
                 <div className="hidden md:flex items-center justify-center mx-4 shrink-0">
-                  <RightAngleIcon
-                    ref={(el) => {
-                      arrowsRef.current[index] = el;
-                    }}
-                    className="text-white/80"
-                  />
+                  <RightAngleIcon className="text-white/80" />
                 </div>
               )}
 
