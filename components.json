@@ -18,5 +18,7 @@
     "lib": "@/clients/shared/libs",
     "hooks": "@/clients/shared/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
+  }
 }
