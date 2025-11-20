@@ -3,12 +3,13 @@ import { Galaxy } from "../atoms";
 import {
   CandidatePrivacySection,
   HeroSection,
+  HowItWorksSection,
   MatchSmarterSection,
 } from "../organisms";
 
 export const MainTemplate = () => {
   return (
-    <div className="flex-1">
+    <>
       <div className="fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
@@ -25,6 +26,7 @@ export const MainTemplate = () => {
       <HeroSection />
       <CandidatePrivacySection />
       <MatchSmarterSection />
-    </div>
+      <HowItWorksSection />
+    </>
   );
 };

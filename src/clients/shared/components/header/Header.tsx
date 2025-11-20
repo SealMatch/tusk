@@ -59,7 +59,7 @@ export const Header = () => {
 
           {/* Navigation */}
           <nav className="flex items-center gap-8">
-            <div className="wallet-button-wrapper">
+            <div className="wallet-button-wrapper cursor-pointer">
               <ConnectButton />
             </div>
           </nav>

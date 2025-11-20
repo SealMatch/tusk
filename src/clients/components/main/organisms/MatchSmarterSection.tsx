@@ -1,9 +1,11 @@
+"use client";
 import {
   BoltIcon,
   CPUChipIcon,
   HandRaiseIcon,
   ViewFinderIcon,
 } from "@/clients/shared/components/icons";
+import { useScrollAnimation } from "@/clients/shared/hooks";
 import { FeatureCard, SplitText } from "../atoms";
 
 const MATCH_SMARTER_CONTENT = [
@@ -33,13 +35,15 @@ const MATCH_SMARTER_CONTENT = [
   },
 ] as const;
 export const MatchSmarterSection = () => {
+  const cardsRef = useScrollAnimation<HTMLDivElement>();
+
   return (
-    <section className="relative w-screen min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
+    <section className="relative w-screen h-screen snap-start snap-always flex flex-col items-center justify-center overflow-hidden px-4 py-20">
       <div className="relative z-10 max-w-7xl mx-auto w-full space-y-16">
         <div className="flex flex-col text-center gap-y-8">
           <SplitText
             text="Achieve Smarter, More Precise Matching."
-            className="text-7xl text-zinc-50 font-bold text-center"
+            className="text-6xl text-zinc-50 font-bold text-center"
             delay={100}
             duration={0.3}
             ease="power3.out"
@@ -60,12 +64,17 @@ export const MatchSmarterSection = () => {
           {MATCH_SMARTER_CONTENT.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <FeatureCard
+              <div
                 key={index}
-                title={feature.title}
-                description={feature.description}
-                icon={Icon}
-              />
+                ref={(el) => {
+                  cardsRef.current[index] = el;
+                }}>
+                <FeatureCard
+                  title={feature.title}
+                  description={feature.description}
+                  icon={Icon}
+                />
+              </div>
             );
           })}
         </div>

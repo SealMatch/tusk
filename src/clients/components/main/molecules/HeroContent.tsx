@@ -5,7 +5,7 @@ export const HeroContent = () => {
     <div className="text-center flex flex-col items-center gap-8">
       <SplitText
         text="Seal Match"
-        className="text-7xl text-zinc-50 font-bold"
+        className="text-8xl text-zinc-50 font-bold"
         delay={100}
         duration={0.6}
         ease="power3.out"

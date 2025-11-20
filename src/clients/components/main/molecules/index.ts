@@ -1,2 +1,2 @@
-export { HeroButtonContainer } from "./HeroButtonContainer";
+export { CTAContainer } from "./CTAContainer";
 export { HeroContent } from "./HeroContent";
