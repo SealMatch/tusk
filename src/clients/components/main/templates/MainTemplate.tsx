@@ -1,5 +1,5 @@
 import { Header } from "@/clients/shared/components/header";
-import { MainIntroductionSection } from "../organisms";
+import { HeroSection } from "../organisms";
 
 export const MainTemplate = () => {
   return (
@@ -7,7 +7,7 @@ export const MainTemplate = () => {
       <div className="fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
-      <MainIntroductionSection />
+      <HeroSection />
     </div>
   );
 };
