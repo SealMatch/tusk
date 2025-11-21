@@ -38,7 +38,7 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
 {
   "position": "Primary job position (e.g., Backend Developer, Frontend Engineer, Full-stack Developer, DevOps Engineer, etc.)",
   "techStack": ["JavaScript", "React", "Node.js", "PostgreSQL", "Docker", "AWS", ...],
-  "careerDetail": "Career summary (Summarize key career experiences and projects in 10-15 sentences)"
+  "careerDetail": "Objective third-party evaluation highlighting this candidate's key strengths and competitive advantages"
 }
 
 **Analysis Guidelines:**
@@ -50,7 +50,15 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
    - DevOps & Cloud tools (e.g., Docker, Kubernetes, AWS, GCP, Azure, Jenkins)
    - Development tools (e.g., Git, Jira, Figma)
    - Maximum 10 most relevant items
-3. careerDetail: Concisely summarize core career highlights in 3-5 sentences
+3. careerDetail: Write an objective third-party evaluation (around 5-7 sentences) that:
+   - Uses third-person perspective (e.g., "This candidate demonstrates...", "They possess...", "이 후보자는...", "그는/그녀는...")
+   - Highlights measurable achievements and quantifiable results (e.g., "improved performance by 40%", "led a team of 5 engineers")
+   - Identifies unique competitive advantages and differentiators
+   - Emphasizes technical depth and breadth of expertise
+   - Notes leadership, collaboration, or problem-solving capabilities
+   - Maintains an objective, professional recruiter's tone
+   - Focuses on STRENGTHS and VALUE PROPOSITION rather than just listing experiences
+   - Avoids subjective praise; instead uses evidence-based observations
 
 **Important Notes:**
 - MUST respond ONLY in valid JSON format
@@ -58,6 +66,7 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
 - Use empty string ("") or empty array ([]) if information is unclear
 - The language of all text fields (position, techStack, careerDetail) MUST match the resume's primary language
 - For techStack, use standard technology names (keep English names for technologies even if resume is in another language)
+- For careerDetail, adopt a professional third-party evaluator's perspective, not the candidate's voice
 `;
 
       // Buffer를 Base64로 변환

@@ -1,15 +1,14 @@
 export type Applicant = {
   id: string;
-  name: string;
+  handle: string;
   walletAddress: string;
-  publicBlobId: string;
-  privateBlobId: string;
+  blobId: string;
   sealPolicyId: string;
   pdfDataHash: string;
   position: string; // 공개용 데이터
   techStack: string[]; // 공개용 데이터
-  careerDetail: string; // 공개용 데이터
-  introduction: string; // 직접 입력
+  aiSummary: string; // 공개용 데이터
+  introduction: string; // 직접 입력 - 공개용 데이터
   accessPrice: number;
   embedding: number[];
   isJobSeeking: boolean;
