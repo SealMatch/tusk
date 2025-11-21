@@ -10,6 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:api": "npx tsx src/server/shared/tests/api-applicants.test.ts",
+    "test:api:curl": "./test-api.sh",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx src/server/db/scripts/migrate.ts",
     "db:push": "drizzle-kit push",

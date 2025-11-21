@@ -121,12 +121,12 @@ class LLMService {
 
   /**
    * 임베딩을 위한 텍스트 전처리 (LLM 사용)
-   * summaryModel을 사용하여 지능적으로 키워드 추출 및 영어 변환
+   * summaryModel을 사용하여 구조화된 키워드 JSON 생성
    *
    * @param position - 직무/포지션
    * @param techStack - 기술 스택 배열
    * @param aiSummary - AI 생성 요약
-   * @returns 임베딩용 최적화된 텍스트
+   * @returns 임베딩용 최적화된 텍스트 (평탄화된 키워드 문자열)
    */
   async preprocessForEmbedding({
     position,
@@ -149,15 +149,44 @@ class LLMService {
 **Input Data:**
 ${inputData}
 
-**Generate the optimized embedding text now:**`;
+**Generate the JSON now:**`;
 
       const result = await this.summaryModel.generateContent(prompt);
-      const optimizedText = result.response.text().trim();
+      let responseText = result.response.text().trim();
+
+      // 코드 블록 제거 (```json ... ``` 형태)
+      if (responseText.startsWith("```")) {
+        responseText = responseText
+          .replace(/^```(?:json)?\s*\n?/, "")
+          .replace(/\n?```\s*$/, "")
+          .trim();
+      }
+
+      // JSON 파싱 및 유효성 검증
+      const parsed = JSON.parse(responseText);
+
+      if (
+        !parsed.roles ||
+        !Array.isArray(parsed.roles) ||
+        !parsed.primaryTech ||
+        !Array.isArray(parsed.primaryTech)
+      ) {
+        throw new Error("Invalid JSON structure from LLM");
+      }
+
+      // 모든 배열 값을 평탄화하여 공백으로 구분된 문자열 생성
+      const allKeywords = [
+        ...(parsed.roles || []),
+        ...(parsed.primaryTech || []),
+        ...(parsed.secondaryTech || []),
+        ...(parsed.skills || []),
+        ...(parsed.experience || []),
+      ].join(" ");
 
       return {
         success: true,
         data: {
-          processedSummary: optimizedText,
+          processedSummary: allKeywords,
         },
       };
     } catch (error) {

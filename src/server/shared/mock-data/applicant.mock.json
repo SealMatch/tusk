@@ -1,6 +1,5 @@
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "김철수",
+  "handle": "@llkdjlkej",
   "walletAddress": "0x1234567890abcdef1234567890abcdef12345678",
   "blobId": "blob_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz",
   "sealPolicyId": "seal_policy_xyz789abc123def456ghi789jkl012mno345",
@@ -27,7 +26,5 @@
   "isJobSeeking": true,
   "embedding": [
     0.023, -0.145, 0.089, 0.234, -0.067, 0.178, -0.092, 0.156, 0.045, -0.123
-  ],
-  "createdAt": "2025-11-20T10:30:00.000Z",
-  "updatedAt": "2025-11-21T08:15:00.000Z"
+  ]
 }

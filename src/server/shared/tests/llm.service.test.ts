@@ -1,6 +1,6 @@
 import { geminiSummaryModel } from "@/server/shared/libs/gemini.lib";
-import { llmService } from "./llm.service";
-import { PreProcessEmbeddingParams } from "./llm.type";
+import { llmService } from "../../domains/llm/llm.service";
+import { PreProcessEmbeddingParams } from "../../domains/llm/llm.type";
 
 // Mock Gemini library
 jest.mock("@/server/shared/libs/gemini.lib", () => ({
