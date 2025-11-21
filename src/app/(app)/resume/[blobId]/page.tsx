@@ -7,11 +7,10 @@ import {
   DEV_CURRENT_COMPANY,
   simulatePdfDownload,
 } from "@/clients/shared/mocks";
-import type { PermissionStatus } from "@/clients/shared/types";
 import { Button } from "@/clients/shared/ui";
 import { useCurrentAccount, ConnectModal } from "@mysten/dapp-kit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download, Clock, CheckCircle, XCircle, Wallet } from "lucide-react";
+import { Download, Clock, CheckCircle, XCircle, Wallet, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -27,7 +26,6 @@ export default function ResumeDetailPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["resume", blobId, companyAddress],
     queryFn: () => {
-      // TODO: 실제 API 연동
       return getMockResumeDetail(blobId, companyAddress);
     },
     enabled: !!blobId,
@@ -56,7 +54,6 @@ export default function ResumeDetailPage() {
         setDownloadStatus(step.message);
       });
 
-      // 다운로드 완료 후 상태 초기화
       setTimeout(() => {
         setDownloadStatus("");
         setIsDownloading(false);
@@ -84,20 +81,17 @@ export default function ResumeDetailPage() {
   }
 
   const { resume, myPermissionStatus } = data;
-
-  // 연결 여부 확인
   const isConnected = !!(currentAccount?.address || DEV_CURRENT_COMPANY);
 
   // 권한 상태에 따른 단일 버튼 렌더링
-  // 항상 하나의 버튼만 표시됨
   const renderActionButton = () => {
-    // 0. 미연결 상태 → 지갑 연결 버튼
+    // 0. 미연결 상태 → 지갑 연결 버튼 (파란색)
     if (!isConnected) {
       return (
         <ConnectModal
           trigger={
-            <Button variant="default" className="w-full h-12 gap-2">
-              <Wallet className="h-4 w-4" />
+            <Button variant="default" className="w-full h-12 gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Wallet className="h-5 w-5" />
               지갑 연결하고 권한 요청
             </Button>
           }
@@ -105,20 +99,26 @@ export default function ResumeDetailPage() {
       );
     }
 
-    // 1. 승인됨 → PDF 다운로드 버튼
+    // 1. 승인됨 → PDF 다운로드 버튼 (초록색)
     if (myPermissionStatus === "approved") {
       return (
         <div className="space-y-2">
           <Button
-            variant="outline"
-            className="w-full h-12 text-white border-gray-600 hover:bg-gray-700"
+            variant="default"
+            className="w-full h-12 gap-2 bg-green-600 hover:bg-green-700 text-white border-none disabled:bg-green-800 disabled:opacity-100"
             onClick={handleDownloadPdf}
             disabled={isDownloading}
           >
-            <Download className="h-4 w-4 mr-2" />
-            {isDownloading ? "다운로드 중..." : "PDF 다운로드"}
-            {!isDownloading && (
-              <CheckCircle className="h-4 w-4 ml-2 text-green-500" />
+            {isDownloading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                다운로드 중...
+              </>
+            ) : (
+              <>
+                <Download className="h-5 w-5" />
+                PDF 다운로드
+              </>
             )}
           </Button>
           {downloadStatus && (
@@ -128,43 +128,55 @@ export default function ResumeDetailPage() {
       );
     }
 
-    // 2. 요청 중 → 권한 요청 중 버튼 (비활성화)
+    // 2. 요청 중 → 권한 요청 중 버튼 (진한 노란색/주황색 Solid)
+    // disabled 상태여도 흐려지지 않게 opacity-100 적용
     if (myPermissionStatus === "pending" || requestMutation.isPending) {
       return (
         <Button
-          variant="outline"
-          className="w-full h-12 text-gray-400 border-gray-600"
+          variant="default"
+          className="w-full h-12 gap-2 bg-amber-600 text-white border-none disabled:opacity-100 cursor-not-allowed"
           disabled
         >
-          <Clock className="h-4 w-4 mr-2" />
-          권한 요청 중
+          <Clock className="h-5 w-5" />
+          권한 요청 중 (승인 대기)
         </Button>
       );
     }
 
-    // 3. 거절됨 → 거절됨 버튼 (비활성화)
+    // 3. 거절됨 → 거절됨 버튼 (진한 빨간색 Solid)
+    // disabled 상태여도 흐려지지 않게 opacity-100 적용
     if (myPermissionStatus === "rejected") {
       return (
         <Button
-          variant="outline"
-          className="w-full h-12 text-red-400 border-red-600"
+          variant="default"
+          className="w-full h-12 gap-2 bg-red-600 text-white border-none disabled:opacity-100 cursor-not-allowed"
           disabled
         >
-          <XCircle className="h-4 w-4 mr-2" />
+          <XCircle className="h-5 w-5" />
           거절됨
         </Button>
       );
     }
 
-    // 4. null (요청한 적 없음) → 권한 요청 버튼
+    // 4. null (요청한 적 없음) → 권한 요청 버튼 (파란색)
     return (
       <Button
         variant="default"
-        className="w-full h-12"
+        className="w-full h-12 gap-2 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-800"
         onClick={handleRequestPermission}
         disabled={requestMutation.isPending}
       >
-        권한 요청
+        {requestMutation.isPending ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" />
+            요청 중...
+          </>
+        ) : (
+          <>
+            <CheckCircle className="h-5 w-5" />
+            권한 요청
+          </>
+        )}
       </Button>
     );
   };
