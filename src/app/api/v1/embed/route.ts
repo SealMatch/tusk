@@ -1,8 +1,8 @@
-import { embedService } from "@/server/domains/embed/embed.service";
+import { llmService } from "@/server/domains/llm/llm.service";
 import {
   EmbedResponse,
   embedRequestSchema,
-} from "@/server/domains/embed/embed.type";
+} from "@/server/domains/llm/llm.type";
 import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -19,7 +19,7 @@ export async function POST(
     const validatedData = embedRequestSchema.parse(body);
 
     // 3. Service 호출
-    const result = await embedService.createEmbedding(validatedData.text);
+    const result = await llmService.createEmbedding(validatedData.text);
 
     // 4. Result 처리
     if (!result.success) {
