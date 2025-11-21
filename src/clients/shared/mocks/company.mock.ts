@@ -40,10 +40,27 @@ export const TEST_COMPANIES = [
 // 키: 회사 지갑 주소
 // 값: { blobId: PermissionStatus | null }
 // 테스트 시 다른 지갑으로 연결하면 다른 권한 상태를 볼 수 있음
+
+// 개발자 테스트용 지갑 주소 (환경변수에서 가져옴)
+const DEV_TEST_WALLET = process.env.NEXT_PUBLIC_DEV_TEST_WALLET;
+
+// 테스트 지갑용 기본 권한 상태
+// 각 상태를 테스트할 수 있도록 다양한 상태 설정
+const devTestWalletPermissions: Record<string, PermissionStatus | null> = {
+  "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12": "approved", // 승인됨 - PDF 다운로드 테스트
+  "0x2b3c4d5e6f7890abcdef1234567890abcdef1234": "pending", // 요청 중
+  "0x3c4d5e6f7890abcdef1234567890abcdef123456": null, // 백엔드개발자!!!:::요청 안함 - 권한 요청 테스트
+  "0x4d5e6f7890abcdef1234567890abcdef12345678": "rejected", // 거절됨
+  "0x5e6f7890abcdef1234567890abcdef1234567890": "approved", // 승인됨
+  "0x6f7890abcdef1234567890abcdef12345678901a": "pending", // 요청 중
+};
+
 export const mockPermissionStatusByCompany: Record<
   string,
   Record<string, PermissionStatus | null>
 > = {
+  // 환경변수에 테스트 지갑이 설정되어 있으면 추가
+  ...(DEV_TEST_WALLET ? { [DEV_TEST_WALLET]: devTestWalletPermissions } : {}),
   // A회사: 4가지 상태를 모두 테스트할 수 있도록 설정
   [TEST_COMPANY_ADDRESSES.COMPANY_A]: {
     "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12": "approved", // 승인됨

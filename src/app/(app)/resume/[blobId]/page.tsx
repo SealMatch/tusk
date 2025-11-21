@@ -8,7 +8,8 @@ import {
   simulatePdfDownload,
 } from "@/clients/shared/mocks";
 import { Button } from "@/clients/shared/ui";
-import { useCurrentAccount, ConnectModal, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+import { downloadAndDecryptPdf, downloadBlob } from "@/clients/shared/utils";
+import { useCurrentAccount, ConnectModal, useSignAndExecuteTransaction, useSuiClient, useSignPersonalMessage } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download, Clock, CheckCircle, XCircle, Wallet, Loader2 } from "lucide-react";
@@ -25,6 +26,7 @@ export default function ResumeDetailPage() {
   const currentAccount = useCurrentAccount();
   const suiClient = useSuiClient();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+  const { mutateAsync: signPersonalMessage } = useSignPersonalMessage();
 
   // 실제 지갑이 연결되면 그 주소 사용, 아니면 개발용 테스트 회사 사용
   const companyAddress = currentAccount?.address || DEV_CURRENT_COMPANY;
@@ -96,6 +98,43 @@ export default function ResumeDetailPage() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadPdf = async () => {
+    // 지갑이 연결되어 있으면 실제 Walrus + Seal 다운로드
+    if (currentAccount?.address && data?.resume.sealPolicyId) {
+      setIsDownloading(true);
+      setDownloadStatus("");
+
+      try {
+        const result = await downloadAndDecryptPdf(
+          blobId,
+          data.resume.sealPolicyId,
+          suiClient,
+          currentAccount.address,
+          signPersonalMessage,
+          (progress) => {
+            setDownloadStatus(progress.message);
+          }
+        );
+
+        if (result.success && result.blob) {
+          downloadBlob(result.blob, `resume_${blobId.slice(0, 8)}.pdf`);
+          setDownloadStatus("✅ 다운로드 완료!");
+          setTimeout(() => {
+            setDownloadStatus("");
+            setIsDownloading(false);
+          }, 2000);
+        } else {
+          setDownloadStatus(`❌ ${result.error || "다운로드 실패"}`);
+          setIsDownloading(false);
+        }
+      } catch (error) {
+        console.error("PDF download error:", error);
+        setDownloadStatus("❌ 다운로드 실패");
+        setIsDownloading(false);
+      }
+      return;
+    }
+
+    // 개발 모드: Mock 시뮬레이션 사용
     setIsDownloading(true);
     setDownloadStatus("");
 
