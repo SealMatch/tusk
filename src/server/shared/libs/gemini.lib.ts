@@ -11,3 +11,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export const geminiEmbeddingModel = genAI.getGenerativeModel({
   model: "text-embedding-004",
 });
+
+export const geminiSummaryModel = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+});
