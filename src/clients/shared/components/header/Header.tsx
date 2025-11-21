@@ -2,11 +2,13 @@
 import { LogoIcon } from "@/clients/shared/components/icons";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export const Header = () => {
   const currentAccount = useCurrentAccount();
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathName = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,15 +19,19 @@ export const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isMainPage = pathName === "/";
+
   return (
-    <header className="sticky top-0 z-50 py-6 px-4 md:px-8 transition-all duration-300">
-      <div className="max-w-7xl mx-auto">
+    <header className="sticky top-0 z-50 py-4 px-2 md:px-8 transition-all duration-300">
+      <div className={`${isMainPage ? "max-w-7xl" : "max-w-9xl"} mx-auto`}>
         <div
-          className={`flex items-center justify-between px-6 py-4 rounded-full border transition-all duration-300 ${
-            isScrolled
-              ? "border-white/20 bg-black/60 backdrop-blur-xl shadow-2xl"
-              : "border-white/10 bg-black/40 backdrop-blur-xl shadow-lg"
-          }`}>
+          className={`
+            flex items-center justify-between px-6 py-4 
+            backdrop-blur-xl transition-all duration-300
+            ${isMainPage && isScrolled ? "shadow-2xl" : "shadow-lg"}
+            ${!isMainPage && "shadow-none"}
+            ${isMainPage ? "rounded-full border" : ""}
+          `}>
           {/* Logo */}
           <div className="flex items-center gap-4 cursor-pointer">
             <LogoIcon className="w-8 h-8 text-white" />

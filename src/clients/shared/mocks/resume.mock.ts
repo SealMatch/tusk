@@ -19,6 +19,7 @@ export const mockResumeDetails: Record<string, ResumeDetail> = {
     introduction: "사용자 경험을 최우선으로 생각하는 개발자입니다.",
     createdAt: "2024-01-15T09:00:00Z",
     ownerAddress: "0xowner1111111111111111111111111111111111",
+    sealPolicyId: "0xseal_policy_1111111111111111111111111111",
   },
   "0x2b3c4d5e6f7890abcdef1234567890abcdef1234": {
     blobId: "0x2b3c4d5e6f7890abcdef1234567890abcdef1234",
@@ -29,6 +30,7 @@ export const mockResumeDetails: Record<string, ResumeDetail> = {
     introduction: "데이터로 가치를 만드는 엔지니어입니다.",
     createdAt: "2024-01-14T14:30:00Z",
     ownerAddress: "0xowner2222222222222222222222222222222222",
+    sealPolicyId: "0xseal_policy_2222222222222222222222222222",
   },
   "0x3c4d5e6f7890abcdef1234567890abcdef123456": {
     blobId: "0x3c4d5e6f7890abcdef1234567890abcdef123456",
@@ -40,6 +42,7 @@ export const mockResumeDetails: Record<string, ResumeDetail> = {
     etc: "정보처리기사, AWS SAA 자격증 보유",
     createdAt: "2024-01-13T11:00:00Z",
     ownerAddress: "0xowner3333333333333333333333333333333333",
+    sealPolicyId: "0xseal_policy_3333333333333333333333333333",
   },
   "0x4d5e6f7890abcdef1234567890abcdef12345678": {
     blobId: "0x4d5e6f7890abcdef1234567890abcdef12345678",
@@ -50,6 +53,7 @@ export const mockResumeDetails: Record<string, ResumeDetail> = {
     introduction: "모바일 UX에 진심인 개발자입니다.",
     createdAt: "2024-01-12T16:45:00Z",
     ownerAddress: "0xowner4444444444444444444444444444444444",
+    sealPolicyId: "0xseal_policy_4444444444444444444444444444",
   },
   "0x5e6f7890abcdef1234567890abcdef1234567890": {
     blobId: "0x5e6f7890abcdef1234567890abcdef1234567890",
@@ -61,6 +65,7 @@ export const mockResumeDetails: Record<string, ResumeDetail> = {
     etc: "CKA, AWS DevOps Professional 자격증",
     createdAt: "2024-01-11T10:15:00Z",
     ownerAddress: "0xowner5555555555555555555555555555555555",
+    sealPolicyId: "0xseal_policy_5555555555555555555555555555",
   },
   "0x6f7890abcdef1234567890abcdef12345678901a": {
     blobId: "0x6f7890abcdef1234567890abcdef12345678901a",
@@ -72,6 +77,7 @@ export const mockResumeDetails: Record<string, ResumeDetail> = {
     introduction: "Web3의 미래를 만들어갑니다.",
     createdAt: "2024-01-10T08:30:00Z",
     ownerAddress: "0xowner6666666666666666666666666666666666",
+    sealPolicyId: "0xseal_policy_6666666666666666666666666666",
   },
 };
 

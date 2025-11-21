@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0D1117]`}>
+        className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
         <TanstackQueryProvider>
           <SuiClientProvider>
             <WalletProvider>
