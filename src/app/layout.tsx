@@ -1,4 +1,3 @@
-import { Header } from "@/clients/shared/components";
 import { SuiClientProvider } from "@/clients/shared/providers/sui-client-provider";
 import { TanstackQueryProvider } from "@/clients/shared/providers/tanstack-query";
 import { WalletProvider } from "@/clients/shared/providers/wallet-provider";

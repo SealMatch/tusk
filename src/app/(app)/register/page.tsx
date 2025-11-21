@@ -1,7 +1,6 @@
 "use client";
 
 import { useUserStore } from "@/clients/shared/stores";
-import { Button } from "@/clients/shared/ui";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { Building2, User } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -10,7 +9,7 @@ import { useEffect } from "react";
 export default function RegisterPage() {
   const router = useRouter();
   const currentAccount = useCurrentAccount();
-  const { setUserType, isRegistered } = useUserStore();
+  const { setUserType, isRegistered, isCompany } = useUserStore();
 
   // 지갑 미연결 시 홈으로
   useEffect(() => {
@@ -19,12 +18,16 @@ export default function RegisterPage() {
     }
   }, [currentAccount, router]);
 
-  // 이미 가입된 사용자면 홈으로
+  // 이미 가입된 사용자면 적절한 페이지로 이동
   useEffect(() => {
     if (currentAccount && isRegistered(currentAccount.address)) {
-      router.push("/");
+      if (isCompany(currentAccount.address)) {
+        router.push("/search");
+      } else {
+        router.push("/");
+      }
     }
-  }, [currentAccount, isRegistered, router]);
+  }, [currentAccount, isRegistered, isCompany, router]);
 
   if (!currentAccount) {
     return null;
@@ -32,12 +35,12 @@ export default function RegisterPage() {
 
   const handleSelectCompany = () => {
     setUserType(currentAccount.address, "company");
-    router.push("/register/company");
+    router.push("/search");
   };
 
   const handleSelectJobseeker = () => {
     setUserType(currentAccount.address, "jobseeker");
-    router.push("/register/jobseeker");
+    router.push("/");
   };
 
   return (

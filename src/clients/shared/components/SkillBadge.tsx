@@ -6,11 +6,8 @@ interface SkillBadgeProps {
   className?: string;
 }
 
-/**
- * 기술 스킬 뱃지 컴포넌트
- * - 각 스킬마다 고유한 배경색과 텍스트 색상을 가짐
- * - 등록되지 않은 스킬은 기본 회색 사용
- */
+
+// 기술 스킬 뱃지 컴포넌트
 export function SkillBadge({ skill, className }: SkillBadgeProps) {
   const color = getSkillColor(skill);
 
