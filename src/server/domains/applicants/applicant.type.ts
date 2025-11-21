@@ -6,8 +6,9 @@ export type Applicant = {
   privateBlobId: string;
   sealPolicyId: string;
   dataHash: string;
+  position: string; // 공개용 데이터
   techStack: string[]; // 공개용 데이터
-  careerDetail: string; // 공개용 데이터
+  careerDetail: string;
   education: Education[];
   experiences: Experience[];
   introduction: string; // 공개용 데이터
