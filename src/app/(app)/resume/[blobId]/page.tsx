@@ -8,17 +8,23 @@ import {
   simulatePdfDownload,
 } from "@/clients/shared/mocks";
 import { Button } from "@/clients/shared/ui";
-import { useCurrentAccount, ConnectModal } from "@mysten/dapp-kit";
+import { useCurrentAccount, ConnectModal, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+import { Transaction } from "@mysten/sui/transactions";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download, Clock, CheckCircle, XCircle, Wallet, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+
+// 스마트 컨트랙트 상수
+const PACKAGE_ID = "0xb35fbef347e1a4ea13adb7bd0f24f6c9e82117f5715da28dbf8924539bd2178a";
 
 export default function ResumeDetailPage() {
   const params = useParams();
   const blobId = params.blobId as string;
   const queryClient = useQueryClient();
   const currentAccount = useCurrentAccount();
+  const suiClient = useSuiClient();
+  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
   // 실제 지갑이 연결되면 그 주소 사용, 아니면 개발용 테스트 회사 사용
   const companyAddress = currentAccount?.address || DEV_CURRENT_COMPANY;
@@ -32,7 +38,51 @@ export default function ResumeDetailPage() {
   });
 
   const requestMutation = useMutation({
-    mutationFn: () => requestPermission(blobId, companyAddress),
+    mutationFn: async () => {
+      // 지갑이 연결되어 있으면 실제 Sui 트랜잭션 호출
+      if (currentAccount?.address) {
+        const tx = new Transaction();
+
+        // blobId를 vector<u8>로 변환
+        const candidateIdBytes = Array.from(new TextEncoder().encode(blobId));
+
+        tx.moveCall({
+          target: `${PACKAGE_ID}::view_request::create`,
+          arguments: [
+            tx.pure.address(currentAccount.address), // recruiter
+            tx.pure.vector('u8', candidateIdBytes),  // candidate_id (blobId)
+          ],
+        });
+
+        return new Promise((resolve, reject) => {
+          signAndExecuteTransaction(
+            {
+              transaction: tx,
+            },
+            {
+              onSuccess: async (result) => {
+                // 트랜잭션 완료 대기
+                await suiClient.waitForTransaction({
+                  digest: result.digest,
+                });
+
+                // Mock 상태도 업데이트 (개발용)
+                await requestPermission(blobId, companyAddress);
+
+                resolve({ success: true, newStatus: "pending" as const });
+              },
+              onError: (error) => {
+                console.error("Transaction failed:", error);
+                reject(error);
+              },
+            }
+          );
+        });
+      }
+
+      // 개발 모드: Mock 함수 사용
+      return requestPermission(blobId, companyAddress);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume", blobId, companyAddress] });
     },
