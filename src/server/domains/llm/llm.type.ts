@@ -31,3 +31,13 @@ export type SummaryResponse = {
   techStack: string[];
   careerDetail: string;
 };
+
+export type PreProcessEmbeddingParams = {
+  position: string;
+  techStack: string[];
+  aiSummary: string;
+};
+
+export type PreProcessEmbeddingResponse = {
+  processedSummary: string;
+};
