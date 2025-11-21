@@ -4,7 +4,16 @@ import {
 } from "@/server/shared/libs/gemini.lib";
 import { Result } from "@/server/shared/types/result.type";
 import { GenerativeModel } from "@google/generative-ai";
-import { EmbedResponse, SummaryResponse } from "./llm.type";
+import {
+  ANALYZE_PDF_PROMPT,
+  PREPROCESS_FOR_EMBEDDING_PROMPT,
+} from "./llm.promts";
+import {
+  EmbedResponse,
+  PreProcessEmbeddingParams,
+  PreProcessEmbeddingResponse,
+  SummaryResponse,
+} from "./llm.type";
 
 class LLMService {
   private readonly embeddingModel: GenerativeModel;
@@ -25,49 +34,7 @@ class LLMService {
     mimeType: string = "application/pdf"
   ): Promise<Result<SummaryResponse>> {
     try {
-      const prompt = `
-You are a resume analysis expert. Analyze the provided PDF resume and extract the following information in JSON format.
-
-**IMPORTANT: Respond in the SAME LANGUAGE as the resume's PRIMARY LANGUAGE.**
-- If the resume is in Korean, respond in Korean.
-- If the resume is in English, respond in English.
-- If the resume is in Japanese, respond in Japanese.
-- Maintain the language consistency throughout all fields.
-
-**Required Output Format (JSON only):**
-{
-  "position": "Primary job position (e.g., Backend Developer, Frontend Engineer, Full-stack Developer, DevOps Engineer, etc.)",
-  "techStack": ["JavaScript", "React", "Node.js", "PostgreSQL", "Docker", "AWS", ...],
-  "careerDetail": "Objective third-party evaluation highlighting this candidate's key strengths and competitive advantages"
-}
-
-**Analysis Guidelines:**
-1. position: Select ONE most prominent job role or target position from the resume
-2. techStack: Extract ALL technical skills including:
-   - Programming languages (e.g., JavaScript, Python, Java, Go, TypeScript, C++)
-   - Frameworks & Libraries (e.g., React, Vue, Spring Boot, Django, Express)
-   - Databases (e.g., PostgreSQL, MySQL, MongoDB, Redis)
-   - DevOps & Cloud tools (e.g., Docker, Kubernetes, AWS, GCP, Azure, Jenkins)
-   - Development tools (e.g., Git, Jira, Figma)
-   - Maximum 10 most relevant items
-3. careerDetail: Write an objective third-party evaluation (around 5-7 sentences) that:
-   - Uses third-person perspective (e.g., "This candidate demonstrates...", "They possess...", "이 후보자는...", "그는/그녀는...")
-   - Highlights measurable achievements and quantifiable results (e.g., "improved performance by 40%", "led a team of 5 engineers")
-   - Identifies unique competitive advantages and differentiators
-   - Emphasizes technical depth and breadth of expertise
-   - Notes leadership, collaboration, or problem-solving capabilities
-   - Maintains an objective, professional recruiter's tone
-   - Focuses on STRENGTHS and VALUE PROPOSITION rather than just listing experiences
-   - Avoids subjective praise; instead uses evidence-based observations
-
-**Important Notes:**
-- MUST respond ONLY in valid JSON format
-- Return pure JSON without any comments or explanations
-- Use empty string ("") or empty array ([]) if information is unclear
-- The language of all text fields (position, techStack, careerDetail) MUST match the resume's primary language
-- For techStack, use standard technology names (keep English names for technologies even if resume is in another language)
-- For careerDetail, adopt a professional third-party evaluator's perspective, not the candidate's voice
-`;
+      const prompt = ANALYZE_PDF_PROMPT;
 
       // Buffer를 Base64로 변환
       const pdfBase64 = pdfBuffer.toString("base64");
@@ -125,13 +92,14 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
   }
 
   /**
-   * @param llmSummary - LLM 요약본
+   * @param processedSummary - 처리된 LLM 요약본
    * @returns EmbedResponse
    */
-
-  async createEmbedding(llmSummary: string): Promise<Result<EmbedResponse>> {
+  async createEmbedding(
+    processedSummary: string
+  ): Promise<Result<EmbedResponse>> {
     try {
-      const result = await this.embeddingModel.embedContent(llmSummary);
+      const result = await this.embeddingModel.embedContent(processedSummary);
       const embedding = result.embedding.values;
 
       return {
@@ -147,6 +115,59 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
         success: false,
         errorMessage:
           error instanceof Error ? error.message : "Failed to create embedding",
+      };
+    }
+  }
+
+  /**
+   * 임베딩을 위한 텍스트 전처리 (LLM 사용)
+   * summaryModel을 사용하여 지능적으로 키워드 추출 및 영어 변환
+   *
+   * @param position - 직무/포지션
+   * @param techStack - 기술 스택 배열
+   * @param aiSummary - AI 생성 요약
+   * @returns 임베딩용 최적화된 텍스트
+   */
+  async preprocessForEmbedding({
+    position,
+    techStack,
+    aiSummary,
+  }: PreProcessEmbeddingParams): Promise<Result<PreProcessEmbeddingResponse>> {
+    try {
+      const inputData = JSON.stringify(
+        {
+          position,
+          techStack,
+          aiSummary,
+        },
+        null,
+        2
+      );
+
+      const prompt = `${PREPROCESS_FOR_EMBEDDING_PROMPT}
+
+**Input Data:**
+${inputData}
+
+**Generate the optimized embedding text now:**`;
+
+      const result = await this.summaryModel.generateContent(prompt);
+      const optimizedText = result.response.text().trim();
+
+      return {
+        success: true,
+        data: {
+          processedSummary: optimizedText,
+        },
+      };
+    } catch (error) {
+      console.error("Preprocessing for embedding error:", error);
+      return {
+        success: false,
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : "Failed to preprocess for embedding",
       };
     }
   }

@@ -1,6 +1,6 @@
-import { sql } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -9,6 +9,23 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+
+// pgvector 타입 정의
+const vector = customType<{
+  data: number[];
+  driverData: string;
+  config: { length?: number };
+}>({
+  dataType(config) {
+    return `vector(${config?.length ?? 768})`;
+  },
+  toDriver(value: number[]): string {
+    return JSON.stringify(value);
+  },
+  fromDriver(value: string): number[] {
+    return JSON.parse(value);
+  },
+});
 
 export const applicants = pgTable(
   "applicants",
@@ -33,7 +50,7 @@ export const applicants = pgTable(
 
     isJobSeeking: boolean("is_job_seeking").default(true),
     // 벡터 임베딩 (Gemini embedding-001: 768차원)
-    embedding: sql`vector(768)`,
+    embedding: vector("embedding", { length: 768 }),
 
     // 메타데이터
     createdAt: timestamp("created_at").defaultNow().notNull(),
