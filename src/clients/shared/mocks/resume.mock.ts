@@ -9,10 +9,10 @@ import {
 } from "./company.mock";
 
 // 목데이터(이력서 기본 정보)
-const mockResumeDetails: Record<string, ResumeDetail> = {
+export const mockResumeDetails: Record<string, ResumeDetail> = {
   "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12": {
     blobId: "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12",
-    skills: ["React", "TypeScript", "Node.js"],
+    skills: ["React", "TypeScript", "Node.js", "Next.js", "TailwindCSS", "GraphQL"],
     position: "Frontend Developer",
     experienceDetail: "3년차 프론트엔드 개발자. 대규모 SPA 프로젝트 리드 경험.",
     education: "서울대학교 컴퓨터공학과",
@@ -22,7 +22,7 @@ const mockResumeDetails: Record<string, ResumeDetail> = {
   },
   "0x2b3c4d5e6f7890abcdef1234567890abcdef1234": {
     blobId: "0x2b3c4d5e6f7890abcdef1234567890abcdef1234",
-    skills: ["Python", "TensorFlow", "PyTorch"],
+    skills: ["Python", "TensorFlow", "PyTorch", "Pandas", "NumPy", "Scikit-learn"],
     position: "ML Engineer",
     experienceDetail: "5년차 ML 엔지니어. 추천 시스템 및 NLP 모델 개발.",
     education: "KAIST 인공지능학과 석사",
@@ -32,7 +32,7 @@ const mockResumeDetails: Record<string, ResumeDetail> = {
   },
   "0x3c4d5e6f7890abcdef1234567890abcdef123456": {
     blobId: "0x3c4d5e6f7890abcdef1234567890abcdef123456",
-    skills: ["Java", "Spring", "AWS"],
+    skills: ["Java", "Spring", "AWS", "PostgreSQL", "Redis", "Kafka"],
     position: "Backend Developer",
     experienceDetail: "4년차 백엔드 개발자. MSA 아키텍처 설계 및 구축.",
     education: "고려대학교 소프트웨어학과",
@@ -43,7 +43,7 @@ const mockResumeDetails: Record<string, ResumeDetail> = {
   },
   "0x4d5e6f7890abcdef1234567890abcdef12345678": {
     blobId: "0x4d5e6f7890abcdef1234567890abcdef12345678",
-    skills: ["React Native", "Flutter", "Swift"],
+    skills: ["React Native", "Flutter", "Swift", "Kotlin", "Firebase"],
     position: "Mobile Developer",
     experienceDetail: "2년차 모바일 개발자. iOS/Android 크로스 플랫폼 개발.",
     education: "연세대학교 컴퓨터과학과",
@@ -53,7 +53,7 @@ const mockResumeDetails: Record<string, ResumeDetail> = {
   },
   "0x5e6f7890abcdef1234567890abcdef1234567890": {
     blobId: "0x5e6f7890abcdef1234567890abcdef1234567890",
-    skills: ["Kubernetes", "Docker", "Terraform"],
+    skills: ["Kubernetes", "Docker", "Terraform", "AWS", "GCP", "Jenkins", "ArgoCD"],
     position: "DevOps Engineer",
     experienceDetail: "6년차 DevOps 엔지니어. 대규모 클라우드 인프라 운영.",
     education: "포항공대 컴퓨터공학과",
@@ -64,7 +64,7 @@ const mockResumeDetails: Record<string, ResumeDetail> = {
   },
   "0x6f7890abcdef1234567890abcdef12345678901a": {
     blobId: "0x6f7890abcdef1234567890abcdef12345678901a",
-    skills: ["Solidity", "Rust", "Move"],
+    skills: ["Solidity", "Rust", "Move", "TypeScript", "Hardhat"],
     position: "Blockchain Developer",
     experienceDetail:
       "3년차 블록체인 개발자. DeFi 프로토콜 및 스마트 컨트랙트 개발.",

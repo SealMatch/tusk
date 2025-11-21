@@ -3,7 +3,6 @@
 import { SkillBadge } from "@/clients/shared/components";
 import { getMockSearchResponse } from "@/clients/shared/mocks";
 import type { ResumeResult } from "@/clients/shared/types";
-import { Badge } from "@/clients/shared/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -27,6 +26,33 @@ export default function SearchResultsPage() {
 
   const handleCardClick = (blobId: string) => {
     router.push(`/resume/${blobId}`);
+  };
+
+  // 검색 키워드와 매칭되는 스킬을 앞으로 정렬
+  const getSortedSkills = (skills: string[]) => {
+    const queryLower = query.toLowerCase();
+    const queryWords = queryLower.split(/\s+/).filter(word => word.length > 0);
+
+    const matched = skills.filter(skill => {
+      const skillLower = skill.toLowerCase();
+      return queryWords.some(word =>
+        skillLower.includes(word) || word.includes(skillLower)
+      );
+    });
+
+    // 매칭된 스킬이 없으면 원래 순서 유지
+    if (matched.length === 0) {
+      return skills;
+    }
+
+    const unmatched = skills.filter(skill => {
+      const skillLower = skill.toLowerCase();
+      return !queryWords.some(word =>
+        skillLower.includes(word) || word.includes(skillLower)
+      );
+    });
+
+    return [...matched, ...unmatched];
   };
 
   if (isLoading) {
@@ -61,36 +87,45 @@ export default function SearchResultsPage() {
           <button
             key={result.blobId}
             onClick={() => handleCardClick(result.blobId)}
-            className="bg-[#2f2f2f] rounded-xl p-4 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600"
+            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[200px]"
           >
-            {/* 직무 */}
-            <p className="text-white font-semibold text-sm mb-2">
-              {result.position}
-            </p>
+            {/* 직무 - 고정 높이 */}
+            <div className="h-[28px] mb-1">
+              <p className="text-white font-semibold text-base truncate">
+                {result.position}
+              </p>
+            </div>
 
             {/* 구분선 */}
             <div className="border-t border-gray-700 my-3" />
 
-            {/* 기술 스택 */}
-            <div className="mb-3">
+            {/* 기술 스택 - 매칭 스킬 우선 표시 */}
+            <div className="h-[44px] mb-3">
               <p className="text-xs text-gray-500 mb-1.5">기술 스택</p>
-              <div className="flex flex-wrap gap-1.5">
-                {result.skills.slice(0, 3).map((skill) => (
-                  <SkillBadge key={skill} skill={skill} className="text-xs" />
-                ))}
-                {result.skills.length > 3 && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs border-gray-600 text-gray-400"
-                  >
-                    +{result.skills.length - 3}
-                  </Badge>
-                )}
+              <div className="flex items-center gap-1.5 overflow-hidden">
+                {(() => {
+                  const sortedSkills = getSortedSkills(result.skills);
+                  const displaySkills = sortedSkills.slice(0, 2);
+                  const remainingCount = sortedSkills.length - 2;
+
+                  return (
+                    <>
+                      {displaySkills.map((skill) => (
+                        <SkillBadge key={skill} skill={skill} className="text-xs shrink-0" />
+                      ))}
+                      {remainingCount > 0 && (
+                        <span className="text-xs text-gray-500 shrink-0 whitespace-nowrap">
+                          외 {remainingCount}개
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
-            {/* 자기소개 (1줄 말줄임) */}
-            <p className="text-xs text-gray-400 line-clamp-1">
+            {/* 자기소개 - 남은 공간 차지 (2줄 말줄임) */}
+            <p className="text-sm text-gray-400 line-clamp-2 flex-1">
               {result.introduction}
             </p>
 
