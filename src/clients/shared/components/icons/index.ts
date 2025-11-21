@@ -5,6 +5,7 @@ export { FunnelIcon } from "./FunnelIcon";
 export { HandRaiseIcon } from "./HandRaiseIcon";
 export { KeyIcon } from "./KeyIcon";
 export { LockIcon } from "./LockIcon";
+export { LogoIcon } from "./LogoIcon";
 export { RightAngleIcon } from "./RightAngleIcon";
 export { SearchIcon } from "./SearchIcon";
 export { ShieldIcon } from "./ShieldIcon";
