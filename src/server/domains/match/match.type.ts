@@ -36,6 +36,7 @@ export interface UpdateMatchStatusParams {
 }
 
 export interface ProfilePageDataResponse {
+  userHandle: string;
   requestedList: ProfilePageDataItem[];
   receivedList: ProfilePageDataItem[];
 }
