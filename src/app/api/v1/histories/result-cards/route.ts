@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
  * Request body schema
  */
 interface SearchResultCardsBody {
+  historyId: string;
   query: string;
   results: Array<{
     applicantId: string;
@@ -18,12 +19,12 @@ interface SearchResultCardsBody {
 
 /**
  * @openapi
- * /api/v1/search/result-cards:
+ * /api/v1/histories/result-cards:
  *   post:
- *     summary: 검색 결과 카드 조회
- *     description: 검색 결과와 매칭 정보를 결합하여 카드 형태로 제공합니다.
+ *     summary: 예전 검색 결과 카드 조회
+ *     description: 예전 검색 결과와 매칭 정보를 결합하여 카드 형태로 제공합니다.
  *     tags:
- *       - Search
+ *       - Histories
  *     requestBody:
  *       required: true
  *       content:

@@ -1,4 +1,6 @@
 import { llmService } from "@/server/domains/llm/llm.service";
+import { SummaryResponse } from "@/server/domains/llm/llm.type";
+import { Result } from "@/server/shared/types/result.type";
 import { parseFormData } from "@/server/shared/utils/parse-form-data";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -67,7 +69,9 @@ export const maxDuration = 60; // 60 seconds timeout
  *                   type: string
  *                   example: "Internal server error"
  */
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse<Result<SummaryResponse>>> {
   try {
     const { files } = await parseFormData(request);
 

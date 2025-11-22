@@ -29,7 +29,7 @@ export type SummaryRequest = z.infer<typeof summaryRequestSchema>;
 export type SummaryResponse = {
   position: string;
   techStack: string[];
-  careerDetail: string;
+  aiSummary: string;
 };
 
 export type PreProcessEmbeddingParams = {
