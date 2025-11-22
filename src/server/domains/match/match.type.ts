@@ -1,7 +1,7 @@
 /**
  * Match status type
  */
-export type MatchStatus = "pending" | "accepted" | "rejected" | "cancelled";
+export type MatchStatus = "pending" | "approved" | "rejected";
 
 /**
  * Create match request parameter

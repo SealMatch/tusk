@@ -1,3 +1,6 @@
+import { Match } from "@/server/db/schema/matches.schema";
+import { Applicant } from "../applicants/applicants.type";
+
 /**
  * Repository layer parameter - for DB storage
  */
@@ -14,6 +17,13 @@ export interface CreateHistoryParams {
  */
 export interface SearchResultItem {
   applicantId: string;
+  similarity: number;
+  createdAt: Date;
+}
+
+export interface SearchResultCard {
+  applicant: Applicant;
+  match: Match | null;
   similarity: number;
   createdAt: Date;
 }

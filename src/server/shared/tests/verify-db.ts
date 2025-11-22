@@ -22,7 +22,7 @@ async function verifyLatestApplicant() {
     console.log(`   ID: ${latest.id}`);
     console.log(`   Handle: ${latest.handle}`);
     console.log(`   Position: ${latest.position}`);
-    console.log(`   Tech Stack: ${latest.techStack.join(", ")}`);
+    console.log(`   Tech Stack: ${latest.techStack?.join(", ") ?? "N/A"}`);
     console.log(
       `   Embedding dimensions: ${Array.isArray(latest.embeddingDims) ? latest.embeddingDims.length : "N/A"}`
     );
