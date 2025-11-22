@@ -7,7 +7,7 @@ import { CreateApplicantData, CreateApplicantResult } from "./applicants.type";
  * Applicants Repository
  * 데이터베이스 접근 로직을 캡슐화
  */
-class ApplicantsRepository {
+export class ApplicantsRepository {
   /**
    * 지원자 생성
    */

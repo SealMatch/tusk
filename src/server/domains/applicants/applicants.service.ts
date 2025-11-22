@@ -1,13 +1,25 @@
 import { llmService } from "@/server/domains/llm/llm.service";
 import { Result } from "@/server/shared/types/result.type";
-import { applicantsRepository } from "./applicants.repository";
-import { CreateApplicantParams, CreateApplicantResult } from "./applicants.type";
+import {
+  ApplicantsRepository,
+  applicantsRepository,
+} from "./applicants.repository";
+import {
+  CreateApplicantParams,
+  CreateApplicantResult,
+} from "./applicants.type";
 
 /**
  * Applicants Service
  * 비즈니스 로직 처리 (임베딩 생성, 저장 조율)
  */
 class ApplicantsService {
+  private readonly applicantsRepository: ApplicantsRepository;
+
+  constructor() {
+    this.applicantsRepository = applicantsRepository;
+  }
+
   /**
    * 지원자 등록
    * 1. 임베딩 전처리
@@ -33,7 +45,10 @@ class ApplicantsService {
       });
 
       if (!preprocessResult.success) {
-        console.error("❌ Preprocessing failed:", preprocessResult.errorMessage);
+        console.error(
+          "❌ Preprocessing failed:",
+          preprocessResult.errorMessage
+        );
         return {
           success: false,
           errorMessage: preprocessResult.errorMessage || "Preprocessing failed",
@@ -48,7 +63,9 @@ class ApplicantsService {
 
       // 2. 벡터 임베딩 생성
       console.log("🔄 Creating embedding vector...");
-      const embeddingResult = await llmService.createEmbedding(processedSummary);
+      const embeddingResult = await llmService.createEmbedding(
+        processedSummary
+      );
 
       if (!embeddingResult.success) {
         console.error(
@@ -57,7 +74,8 @@ class ApplicantsService {
         );
         return {
           success: false,
-          errorMessage: embeddingResult.errorMessage || "Embedding creation failed",
+          errorMessage:
+            embeddingResult.errorMessage || "Embedding creation failed",
         };
       }
 
@@ -66,7 +84,7 @@ class ApplicantsService {
 
       // 3. DB 저장
       console.log("🔄 Saving to database...");
-      const newApplicant = await applicantsRepository.create({
+      const newApplicant = await this.applicantsRepository.create({
         ...params,
         embedding,
       });
