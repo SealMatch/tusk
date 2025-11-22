@@ -3,7 +3,7 @@
 ## Endpoint
 
 ```
-GET /api/v1/search
+GET /api/v1/search?query=
 ```
 
 벡터 유사도 기반 지원자 검색 API

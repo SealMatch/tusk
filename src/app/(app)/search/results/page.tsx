@@ -43,7 +43,7 @@ export default function SearchResultsPage() {
     queryKey: ["search", query],
     queryFn: async () => {
       // TODO: 실제 API 연동 시 axios 인스턴스 사용
-      // const response = await customAxios.get(`/api/search?query=${query}`);
+      // const response = await customAxios.get(`/api/v1/search?query=${query}`);
       // return response.data;
 
       // 목데이터 사용
@@ -59,12 +59,14 @@ export default function SearchResultsPage() {
   // 검색 키워드와 매칭되는 스킬을 앞으로 정렬
   const getSortedSkills = (skills: string[]) => {
     const queryLower = query.toLowerCase();
-    const queryWords = queryLower.split(/\s+/).filter(word => word.length > 0);
+    const queryWords = queryLower
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
 
-    const matched = skills.filter(skill => {
+    const matched = skills.filter((skill) => {
       const skillLower = skill.toLowerCase();
-      return queryWords.some(word =>
-        skillLower.includes(word) || word.includes(skillLower)
+      return queryWords.some(
+        (word) => skillLower.includes(word) || word.includes(skillLower)
       );
     });
 
@@ -73,10 +75,10 @@ export default function SearchResultsPage() {
       return skills;
     }
 
-    const unmatched = skills.filter(skill => {
+    const unmatched = skills.filter((skill) => {
       const skillLower = skill.toLowerCase();
-      return !queryWords.some(word =>
-        skillLower.includes(word) || word.includes(skillLower)
+      return !queryWords.some(
+        (word) => skillLower.includes(word) || word.includes(skillLower)
       );
     });
 
@@ -145,9 +147,7 @@ export default function SearchResultsPage() {
           <p className="text-xl font-semibold text-gray-300 mb-2">
             조건에 맞는 인재가 없어요
           </p>
-          <p className="text-sm text-gray-500">
-            다른 키워드로 검색해보세요
-          </p>
+          <p className="text-sm text-gray-500">다른 키워드로 검색해보세요</p>
         </div>
       )}
     </div>

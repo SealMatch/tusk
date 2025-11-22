@@ -1,5 +1,6 @@
 import { applicantsService } from "@/server/domains/applicants/applicants.service";
 import { SearchApplicantsResult } from "@/server/domains/applicants/applicants.type";
+import { historyService } from "@/server/domains/histories/history.service";
 import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -60,7 +61,25 @@ export async function GET(
       );
     }
 
-    // 4. Return search results
+    // 4. Save search history (async, non-blocking)
+    const recruiterWalletAddress = request.headers.get("x-wallet-address");
+
+    if (recruiterWalletAddress && result.data) {
+      const applicantIds = result.data.results.map((r) => r.id);
+
+      // Save history in background (don't await)
+      historyService
+        .createSearchHistory({
+          recruiterWalletAddress,
+          query: query.trim(),
+          applicantIds,
+        })
+        .catch((err) => {
+          console.warn("⚠️ Failed to save search history:", err);
+        });
+    }
+
+    // 5. Return search results
     return NextResponse.json(
       {
         success: true,
