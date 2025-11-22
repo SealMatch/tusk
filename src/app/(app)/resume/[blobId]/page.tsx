@@ -17,7 +17,6 @@ export default function ResumeDetailPage() {
   const blobId = params.blobId as string;
   const currentAccount = useCurrentAccount();
 
-  // 지갑이 연결된 상태에서만 이 페이지에 접근 가능 (layout.tsx에서 체크)
   const companyAddress = currentAccount!.address;
 
   const { data, isLoading, error } = useQuery({
@@ -38,7 +37,6 @@ export default function ResumeDetailPage() {
     currentAccountAddress: companyAddress,
   });
 
-  // 블록체인에서 실제 ViewRequest 상태 조회
   const { data: onChainStatus } = useViewRequestStatus({
     recruiterAddress: companyAddress,
     candidateId: blobId,

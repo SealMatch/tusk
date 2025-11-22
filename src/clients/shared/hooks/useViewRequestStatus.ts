@@ -3,10 +3,8 @@ import type { PermissionStatus } from "@/clients/shared/types";
 import { useSuiClient } from "@mysten/dapp-kit";
 import { useQuery } from "@tanstack/react-query";
 
-// ViewRequest 객체의 Move 타입
 const VIEW_REQUEST_TYPE = `${PACKAGE_ID}::view_request::ViewRequest`;
 
-// status 값을 PermissionStatus로 변환
 function parseStatus(status: number): PermissionStatus {
   switch (status) {
     case 0:
@@ -44,7 +42,6 @@ export function useViewRequestStatus({
     queryFn: async (): Promise<PermissionStatus | null> => {
       if (!recruiterAddress) return null;
 
-      // candidateId를 bytes로 변환 (비교용)
       const candidateIdBytes = Array.from(new TextEncoder().encode(candidateId));
 
       // recruiter가 소유한 ViewRequest 객체들 조회
@@ -64,7 +61,6 @@ export function useViewRequestStatus({
 
         const fields = obj.data.content.fields as unknown as ViewRequestFields;
 
-        // candidate_id 비교
         const storedCandidateId = fields.candidate_id;
         if (
           storedCandidateId.length === candidateIdBytes.length &&
@@ -78,7 +74,7 @@ export function useViewRequestStatus({
       return null;
     },
     enabled: enabled && !!recruiterAddress && !!candidateId,
-    staleTime: 10000, // 10초간 캐시
-    refetchInterval: 30000, // 30초마다 자동 갱신
+    staleTime: 10000,
+    refetchInterval: 30000,
   });
 }
