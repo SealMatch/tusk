@@ -1,22 +1,22 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { fromHEX } from "@mysten/sui/utils";
-
-const PACKAGE_ID = "0x9c82c149aadc4db9e9b1efb0c16cb6e75978713dc10e669d40a01570d75d6270";
+import { ACCESS_POLICY_TYPE, ADMIN_CAP_TYPE, PACKAGE_ID } from "../config/contract.config";
+import { SuiTransactionBlockResponse } from "@mysten/sui/client";
 
 export const createAccessPolicyTx = (
-    initialRecruiter: string,
-  ) => {
-    const tx = new Transaction();
-  
-    tx.moveCall({
-      target: `${PACKAGE_ID}::access_policy::create`,
-      arguments: [
-        tx.pure.address(initialRecruiter),
-      ],
-    });
-  
-    return tx;
-  };
+  initialRecruiter: string,
+) => {
+  const tx = new Transaction();
+
+  tx.moveCall({
+    target: `${PACKAGE_ID}::access_policy::create`,
+    arguments: [
+      tx.pure.address(initialRecruiter),
+    ],
+  });
+
+  return tx;
+};
 
 export const addRecruiterTx = (
   policyId: string,
@@ -53,3 +53,31 @@ export const sealApproveTx = (policyObjectId: string, encryptionId: string) => {
 
   return tx;
 };
+
+export const extractObjectIds = (result: SuiTransactionBlockResponse) => {
+  const changes = result.objectChanges;
+
+  let capId: string | null = null;
+  let policyObjectId: string | null = null;
+
+  if (!changes) {
+    throw Error("No object changes found. Did you set showObjectChanges: true?");
+  }
+
+  for (const change of changes) {
+    if (change.type === 'created') {
+      if (change.objectType === ADMIN_CAP_TYPE) {
+        capId = change.objectId;
+      }
+      else if (change.objectType === ACCESS_POLICY_TYPE) {
+        policyObjectId = change.objectId;
+      }
+    }
+  }
+
+  if (!policyObjectId || !capId) {
+    throw Error("AccessPolicy and AdminCap were not created successfully.");
+  }
+
+  return { policyObjectId, capId };
+}
