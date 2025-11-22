@@ -18,6 +18,7 @@
     "careerDetail": "김성훈 후보자는 만 38세에 개발에 입문하여 절실한 마음과 뛰어난 학습 능력을 바탕으로 빠르게 풀스택 개발 역량을 구축했습니다. 그는 NestJS와 Next.js를 중심으로 TypeScript 기반의 SaaS 프로젝트를 기획부터 구현까지 전담할 수 있는 능력을 보유하고 있습니다. 특히, AI 기반 OCR 서비스의 비용을 90% 절감하며 성능을 유지한 경험과 S3 presignedUrl을 활용하여 서버 최적화 및 비용 효율성을 달성하는 등 실제 비즈니스 문제를 해결하고 가치를 창출한 구체적인 성과를 보였습니다. 또한, Flutter, Vue.js, PostgreSQL, MongoDB, AWS 등 다양한 기술 스택을 활용하여 여러 스타트업 프로젝트의 백엔드 및 풀스택 개발을 성공적으로 이끌며 주도적인 문제 해결 능력과 기술적 깊이를 입증했습니다. 초기 스타트업 환경에서 주도적으로 복잡한 시스템을 관리하고 개선한 경험은 이 후보자의 강한 책임감과 성장 잠재력을 보여줍니다.",
     "blobId": "blob_abc123frontend",
     "sealPolicyId": "seal_policy_frontend_001",
+    "encryptionId": "encryption_frontend_001",
     "accessPrice": 30000,
     "isJobSeeking": true
   }

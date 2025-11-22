@@ -38,6 +38,35 @@ export class HistoryRepository {
       .where(eq(histories.recruiterWalletAddress, recruiterWalletAddress))
       .orderBy(desc(histories.createdAt));
   }
+
+  /**
+   * ID로 검색 이력 조회
+   * @param historyId 검색 이력 ID
+   * @returns 검색 이력 또는 undefined
+   */
+  async findById(historyId: string) {
+    const [history] = await db
+      .select()
+      .from(histories)
+      .where(eq(histories.id, historyId))
+      .limit(1);
+
+    return history;
+  }
+
+  /**
+   * 검색 이력 삭제
+   * @param historyId 검색 이력 ID
+   * @returns 삭제된 검색 이력
+   */
+  async delete(historyId: string) {
+    const [deletedHistory] = await db
+      .delete(histories)
+      .where(eq(histories.id, historyId))
+      .returning();
+
+    return deletedHistory;
+  }
 }
 
 export const historyRepository = new HistoryRepository();
