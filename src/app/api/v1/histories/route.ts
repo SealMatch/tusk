@@ -1,5 +1,5 @@
-import { historyService } from "@/server/domains/histories/history.service";
 import { History } from "@/server/db/schema/histories.schema";
+import { historyService } from "@/server/domains/histories/history.service";
 import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 

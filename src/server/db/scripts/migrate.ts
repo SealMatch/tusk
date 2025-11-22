@@ -25,7 +25,7 @@ async function migrate() {
     // 마이그레이션 SQL 파일 읽기
     const migrationPath = join(
       process.cwd(),
-      "src/server/db/drizzle/migrations/0001_glamorous_lord_tyger.sql"
+      "src/server/db/drizzle/migrations/0002_tired_steve_rogers.sql"
     );
     const migrationSQL = readFileSync(migrationPath, "utf-8");
 
