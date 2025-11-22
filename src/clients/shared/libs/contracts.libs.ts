@@ -1,4 +1,5 @@
 import { Transaction } from "@mysten/sui/transactions";
+import { fromHEX } from "@mysten/sui/utils";
 
 const PACKAGE_ID = "0x9c82c149aadc4db9e9b1efb0c16cb6e75978713dc10e669d40a01570d75d6270";
 
@@ -40,13 +41,13 @@ export const addRecruiterTx = (
   return tx;
 };
 
-export const sealApproveTx = (policyId: string) => {
+export const sealApproveTx = (policyObjectId: string, encryptionId: string) => {
   const tx = new Transaction();
-
   tx.moveCall({
     target: `${PACKAGE_ID}::access_policy::seal_approve`,
     arguments: [
-      tx.object(policyId),
+      tx.pure.vector("u8", fromHEX(encryptionId)),
+      tx.object(policyObjectId)
     ],
   });
 
