@@ -232,14 +232,14 @@ export async function POST(
   try {
     // 1. Parse request body
     const body = await request.json();
-    const { recruiterWalletAddress, applicantId } = body;
+    const { recruiterWalletAddress, applicantId, viewRequestId } = body;
 
     // 2. Validation
-    if (!recruiterWalletAddress || !applicantId) {
+    if (!recruiterWalletAddress || !applicantId || !viewRequestId) {
       return NextResponse.json(
         {
           success: false,
-          errorMessage: "recruiterWalletAddress and applicantId are required",
+          errorMessage: "recruiterWalletAddress, applicantId, and viewRequestId are required",
         },
         { status: 400 }
       );
@@ -249,6 +249,7 @@ export async function POST(
     const result = await matchService.createMatch({
       recruiterWalletAddress,
       applicantId,
+      viewRequestId,
     });
 
     if (!result.success) {
@@ -256,8 +257,8 @@ export async function POST(
       const status = result.errorMessage?.includes("already exists")
         ? 409
         : result.errorMessage?.includes("not found")
-        ? 404
-        : 500;
+          ? 404
+          : 500;
 
       return NextResponse.json(
         {

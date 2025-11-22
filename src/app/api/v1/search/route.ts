@@ -1,6 +1,7 @@
 import { applicantsService } from "@/server/domains/applicants/applicants.service";
-import { SearchApplicantsResult } from "@/server/domains/applicants/applicants.type";
+import { SearchApplicantsResult, PublicApplicant } from "@/server/domains/applicants/applicants.type";
 import { historyService } from "@/server/domains/histories/history.service";
+import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -79,7 +80,7 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(
   request: NextRequest
-): Promise<NextResponse<Result<SearchApplicantsResult>>> {
+): Promise<NextResponse<Result<{ results: SearchResultCard[]; total: number }>>> {
   try {
     // 1. Extract query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -127,17 +128,21 @@ export async function GET(
       );
     }
 
-    // 4. Save search history (async, non-blocking)
-    const recruiterWalletAddress = request.headers.get("x-wallet-address");
+    // 4. Save search history (async, non-blocking) & Enrich results
+    const recruiterWalletAddress = request.headers.get("x-wallet-address") || "";
 
-    if (recruiterWalletAddress && result.data) {
-      // Map search results to SearchResultItem format
-      const searchResultItems = result.data.results.map((r) => ({
+    // Map search results to SearchResultItem format (for history service)
+    const searchResultItems = result.data!.results.map((r) => {
+      const { similarity, ...snapshot } = r;
+      return {
         applicantId: r.id,
         similarity: r.similarity,
         createdAt: r.createdAt,
-      }));
+        snapshot: snapshot as unknown as PublicApplicant, // Explicit cast to avoid type issues
+      };
+    });
 
+    if (recruiterWalletAddress) {
       // Save history in background (don't await)
       historyService
         .createSearchHistory({
@@ -150,11 +155,30 @@ export async function GET(
         });
     }
 
-    // 5. Return search results
+    // 5. Get full result cards (with match info)
+    const cardsResult = await historyService.getSearchResultCards(
+      recruiterWalletAddress,
+      searchResultItems
+    );
+
+    if (!cardsResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          errorMessage: cardsResult.errorMessage,
+        },
+        { status: 500 }
+      );
+    }
+
+    // 6. Return search results
     return NextResponse.json(
       {
         success: true,
-        data: result.data,
+        data: {
+          results: cardsResult.data!,
+          total: result.data!.total,
+        },
       },
       { status: 200 }
     );

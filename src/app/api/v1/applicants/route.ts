@@ -13,6 +13,7 @@ const createApplicantSchema = z.object({
   blobId: z.string().optional(),
   sealPolicyId: z.string().optional(),
   encryptionId: z.string().optional(),
+  capId: z.string().optional(),
   accessPrice: z.number().int().min(0).optional(),
   isJobSeeking: z.boolean().optional(),
 });
@@ -72,6 +73,10 @@ const createApplicantSchema = z.object({
  *                 type: string
  *                 description: Encryption ID (선택)
  *                 example: "encryption_789"
+ *               capId:
+ *                 type: string
+ *                 description: CAP (Capability) ID (선택)
+ *                 example: "cap_abc123"
  *               accessPrice:
  *                 type: integer
  *                 minimum: 0
