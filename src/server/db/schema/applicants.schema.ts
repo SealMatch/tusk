@@ -38,6 +38,7 @@ export const applicants = pgTable(
     blobId: text("blob_id").default(""),
     sealPolicyId: text("seal_policy_id").default(""),
     encryptionId: text("encryption_id").default(""),
+    capId: text("cap_id").default(""),
 
     // 공개 정보
     position: text("position"),

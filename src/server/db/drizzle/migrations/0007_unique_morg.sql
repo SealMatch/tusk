@@ -1,0 +1,1 @@
+ALTER TABLE "applicants" ADD COLUMN "cap_id" text DEFAULT '';
