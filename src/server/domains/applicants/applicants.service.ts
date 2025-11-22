@@ -7,6 +7,8 @@ import {
 import {
   CreateApplicantParams,
   CreateApplicantResult,
+  SearchApplicantsParams,
+  SearchApplicantsResult,
 } from "./applicants.type";
 
 /**
@@ -124,6 +126,72 @@ class ApplicantsService {
    */
   async getApplicantById(id: string) {
     return applicantsRepository.findById(id);
+  }
+
+  /**
+   * 검색어로 지원자 검색
+   * 1. 검색어를 벡터로 임베딩
+   * 2. pgvector로 유사도 검색
+   * 3. 결과 반환
+   */
+  async searchApplicants(
+    params: SearchApplicantsParams
+  ): Promise<Result<SearchApplicantsResult>> {
+    try {
+      const { query, limit = 20 } = params;
+
+      console.log("🔍 Searching applicants with query:", query);
+
+      // 1. 검색어를 벡터로 임베딩
+      console.log("🔄 Creating embedding for search query...");
+      const embeddingResult = await llmService.createEmbedding(query);
+
+      if (!embeddingResult.success) {
+        console.error(
+          "❌ Embedding creation failed:",
+          embeddingResult.errorMessage
+        );
+        return {
+          success: false,
+          errorMessage:
+            embeddingResult.errorMessage || "Failed to create embedding",
+        };
+      }
+
+      const queryVector = embeddingResult.data!.embedding;
+      console.log("✅ Query embedding created. Dimensions:", queryVector.length);
+
+      // 2. pgvector로 유사도 검색
+      console.log("🔄 Searching by vector similarity...");
+      const results = await this.applicantsRepository.searchBySimilarity(
+        queryVector,
+        limit
+      );
+
+      console.log("✅ Search completed. Found", results.length, "results");
+
+      return {
+        success: true,
+        data: {
+          results,
+          total: results.length,
+        },
+      };
+    } catch (error) {
+      console.error("❌ Error in searchApplicants service:", error);
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          errorMessage: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        errorMessage: "Unknown error occurred",
+      };
+    }
   }
 }
 

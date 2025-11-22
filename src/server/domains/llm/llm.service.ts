@@ -166,27 +166,19 @@ ${inputData}
       const parsed = JSON.parse(responseText);
 
       if (
-        !parsed.roles ||
-        !Array.isArray(parsed.roles) ||
-        !parsed.primaryTech ||
-        !Array.isArray(parsed.primaryTech)
+        typeof parsed.keywords !== "string" ||
+        typeof parsed.context !== "string"
       ) {
         throw new Error("Invalid JSON structure from LLM");
       }
 
-      // 모든 배열 값을 평탄화하여 공백으로 구분된 문자열 생성
-      const allKeywords = [
-        ...(parsed.roles || []),
-        ...(parsed.primaryTech || []),
-        ...(parsed.secondaryTech || []),
-        ...(parsed.skills || []),
-        ...(parsed.experience || []),
-      ].join(" ");
+      // keywords와 context를 결합하여 임베딩용 텍스트 생성
+      const processedSummary = `${parsed.keywords} ${parsed.context}`.trim();
 
       return {
         success: true,
         data: {
-          processedSummary: allKeywords,
+          processedSummary,
         },
       };
     } catch (error) {

@@ -43,35 +43,29 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
 `;
 
 export const PREPROCESS_FOR_EMBEDDING_PROMPT = `
-Convert resume data into a structured JSON optimized for vector embedding search.
+Convert resume data into text optimized for semantic vector search.
 
 **Instructions:**
-1. Translate everything to English (Korean → English, Japanese → English)
+1. Translate everything to English
 2. Use standard tech names (React not React.js, TypeScript not TS)
-3. Include role variations and repeat key technologies 2-3 times across different arrays
+3. Create TWO sections: keywords for precision, context for understanding
 4. Output valid JSON only
 
 **Output JSON Schema:**
 {
-  "roles": [array of position variations in English],
-  "primaryTech": [top 5-7 most important technologies, repeated if very important],
-  "secondaryTech": [additional tools, frameworks, platforms],
-  "skills": [technical skills, methodologies, expertise areas],
-  "experience": [experience level, seniority, years, domain keywords]
+  "keywords": "space-separated list of key terms (roles, tech, skills, experience level)",
+  "context": "2-3 natural sentences describing the candidate's expertise, experience, and achievements"
 }
 
 **Example Input:**
 - Position: "백엔드 개발자"
 - Tech Stack: ["NestJS", "TypeScript", "PostgreSQL", "Docker", "AWS"]
-- Summary: "3년 경력의 백엔드 개발자로 NestJS를 활용한 RESTful API 개발 및 마이크로서비스 아키텍처 설계 경험"
+- Summary: "3년 경력의 백엔드 개발자로 NestJS를 활용한 RESTful API 개발 및 마이크로서비스 아키텍처 설계 경험. 팀 리더로서 5명의 주니어 개발자 멘토링"
 
 **Example Output:**
 {
-  "roles": ["Backend Developer", "Backend Engineer", "Server Developer", "API Developer", "Backend Programmer"],
-  "primaryTech": ["TypeScript", "NestJS", "PostgreSQL", "Node.js", "TypeScript", "NestJS", "Backend Development"],
-  "secondaryTech": ["Docker", "AWS", "REST API", "Microservices", "PostgreSQL", "Database"],
-  "skills": ["RESTful API", "API Development", "Microservices Architecture", "Database Design", "Backend Architecture", "Server Development"],
-  "experience": ["3 years", "Mid-level", "Backend", "Web Development", "API Development", "Server Engineering"]
+  "keywords": "Backend Developer Backend Engineer Server Developer TypeScript NestJS PostgreSQL Node.js Docker AWS RESTful API Microservices Database 3 years Mid-level Team Lead",
+  "context": "Backend Developer with 3 years of experience specializing in NestJS and TypeScript for RESTful API development and microservices architecture design. Demonstrated leadership as a team lead, mentoring 5 junior developers and providing technical guidance. Proficient in PostgreSQL database optimization and modern DevOps practices with Docker and AWS."
 }
 
 Return ONLY valid JSON. No markdown, no code blocks, no explanations.

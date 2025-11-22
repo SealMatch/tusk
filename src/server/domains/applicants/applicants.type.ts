@@ -33,3 +33,35 @@ export type Applicant = typeof applicants.$inferSelect;
 export interface CreateApplicantResult {
   id: string;
 }
+
+/**
+ * 검색 요청 파라미터
+ */
+export interface SearchApplicantsParams {
+  query: string;
+  limit?: number;
+}
+
+/**
+ * 검색 결과 아이템
+ */
+export interface SearchResultItem {
+  id: string;
+  handle: string;
+  position: string;
+  techStack: string[];
+  aiSummary: string;
+  blobId: string;
+  sealPolicyId: string;
+  accessPrice: number;
+  similarity: number;
+  createdAt: Date;
+}
+
+/**
+ * 검색 결과
+ */
+export interface SearchApplicantsResult {
+  results: SearchResultItem[];
+  total: number;
+}
