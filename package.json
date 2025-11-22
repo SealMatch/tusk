@@ -15,6 +15,7 @@
     "test:api:curl": "./test-api.sh",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx src/server/db/scripts/migrate.ts",
+    "db:init": "npx tsx src/server/db/scripts/init-db.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "test:api:histories": "npx tsx src/server/shared/tests/api-search-result-cards.test.ts"
