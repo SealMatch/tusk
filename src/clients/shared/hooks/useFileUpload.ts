@@ -6,7 +6,7 @@ import { useMemo, useState, ChangeEvent } from "react";
 import { fromHex, toHex } from "@mysten/sui/utils";
 import { walrusClient } from "../libs/walrus.lib";
 import useExecOnChain from "./useExecOnChain";
-import { createAccessPolicyTx, extractObjectIds } from "../libs/contracts.libs";
+import { createAccessPolicyTx, extractAccessPolicyObjectIds } from "../libs/contracts.libs";
 import { PACKAGE_ID, PLATFORM_WALLET_ADDRESS } from "../config/contract.config";
 import { readFileAsArrayBuffer } from "../utils/file.utils";
 
@@ -95,7 +95,7 @@ export const useFileUpload = () => {
         const tx = createAccessPolicyTx(PLATFORM_WALLET_ADDRESS);
 
         const result = await exec(tx);
-        const { policyObjectId, capId } = extractObjectIds(result);
+        const { policyObjectId, capId } = extractAccessPolicyObjectIds(result);
 
         return { policyObjectId, capId };
     }
