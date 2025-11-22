@@ -1,8 +1,13 @@
 "use client";
 
-import { useFileUpload } from "@/clients/shared/hooks/useFileUpload";
+import { useFileUpload, UploadResult } from "@/clients/shared/hooks/useFileUpload";
+import { useEffect } from "react";
 
-export function WalrusUpload() {
+type WalrusUploadProps = {
+	onUploadComplete?: (result: UploadResult) => void;
+};
+
+export function WalrusUpload({ onUploadComplete }: WalrusUploadProps = {}) {
 	const {
 		file,
 		error,
@@ -11,6 +16,13 @@ export function WalrusUpload() {
 		handleFileChange,
 		handleSubmit
 	} = useFileUpload();
+
+	// Notify parent when upload completes
+	useEffect(() => {
+		if (uploadResult && onUploadComplete) {
+			onUploadComplete(uploadResult);
+		}
+	}, [uploadResult, onUploadComplete]);
 
 	return (
 		<div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
