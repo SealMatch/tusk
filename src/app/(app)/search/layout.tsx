@@ -1,7 +1,9 @@
 "use client";
 
 import { useSearchHistory } from "@/clients/shared/hooks/useSearchHistory";
+import { useHistoryStore } from "@/clients/shared/stores/history.store";
 import { Button } from "@/clients/shared/ui";
+import { SearchResultItem } from "@/server/domains/histories/history.type";
 import { PenSquare, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,10 +16,12 @@ export default function SearchLayout({
   const router = useRouter();
 
   const { data: searchHistory, deleteSearchHistory } = useSearchHistory();
+  const { setResults } = useHistoryStore();
 
-  const handleHistoryClick = (query: string) => {
+  const handleHistoryClick = (query: string, results: SearchResultItem[]) => {
     const params = new URLSearchParams({ query });
-    router.push(`/search/results?${params.toString()}`);
+    setResults(results);
+    router.push(`/search/history?${params.toString()}`);
   };
 
   return (
@@ -52,7 +56,7 @@ export default function SearchLayout({
                   className="group flex items-center gap-2 rounded-md hover:bg-gray-800 cursor-pointer"
                 >
                   <button
-                    onClick={() => handleHistoryClick(item.query)}
+                    onClick={() => handleHistoryClick(item.query, item.results)}
                     className="flex-1 text-left px-3 py-2 text-sm text-gray-300 truncate cursor-pointer"
                   >
                     {item.query}
