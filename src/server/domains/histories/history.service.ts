@@ -5,7 +5,9 @@ import {
   historyRepository,
 } from "./history.repository";
 
-import { SearchResultItem } from "./history.type";
+import { SearchResultCard, SearchResultItem } from "./history.type";
+import { applicantsRepository } from "../applicants/applicants.repository";
+import { matchRepository } from "../match/match.repository";
 
 /**
  * 검색 이력 생성 파라미터
@@ -95,6 +97,81 @@ class HistoryService {
       };
     } catch (error) {
       console.error("❌ Error fetching search histories:", error);
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          errorMessage: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        errorMessage: "Unknown error occurred",
+      };
+    }
+  }
+
+  /**
+   * 검색 결과를 SearchResultCard로 변환
+   * - match가 존재하는 항목만 반환
+   */
+  async getSearchResultCards(
+    recruiterWalletAddress: string,
+    results: SearchResultItem[]
+  ): Promise<Result<SearchResultCard[]>> {
+    try {
+      console.log("🔍 Fetching search result cards:", {
+        recruiter: recruiterWalletAddress,
+        resultCount: results.length,
+      });
+
+      // 1. Extract applicant IDs
+      const applicantIds = results.map((item) => item.applicantId);
+
+      if (applicantIds.length === 0) {
+        return {
+          success: true,
+          data: [],
+        };
+      }
+
+      // 2. Parallel queries
+      const [applicantsArray, matchesArray] = await Promise.all([
+        applicantsRepository.findByIds(applicantIds),
+        matchRepository.findByRecruiterAndApplicantIds(
+          recruiterWalletAddress,
+          applicantIds
+        ),
+      ]);
+
+      // 3. Create maps for quick lookup
+      const applicantsMap = new Map(
+        applicantsArray.map((applicant) => [applicant.id, applicant])
+      );
+      const matchesMap = new Map(
+        matchesArray.map((match) => [match.applicantId, match])
+      );
+
+      // 4. Filter & Combine (match가 존재하는 항목만)
+      const resultCards: SearchResultCard[] = results
+        .filter((item) => matchesMap.has(item.applicantId))
+        .filter((item) => applicantsMap.has(item.applicantId))
+        .map((item) => ({
+          applicant: applicantsMap.get(item.applicantId)!,
+          match: matchesMap.get(item.applicantId)!,
+          similarity: item.similarity,
+          createdAt: item.createdAt,
+        }));
+
+      console.log("✅ Result cards created:", resultCards.length);
+
+      return {
+        success: true,
+        data: resultCards,
+      };
+    } catch (error) {
+      console.error("❌ Error creating result cards:", error);
 
       if (error instanceof Error) {
         return {

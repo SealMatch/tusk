@@ -1,6 +1,6 @@
 import { db } from "@/server/db";
 import { matches } from "@/server/db/schema/matches.schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { CreateMatchData, MatchStatus } from "./match.type";
 
 /**
@@ -83,6 +83,31 @@ export class MatchRepository {
       .from(matches)
       .where(eq(matches.applicantId, applicantId))
       .orderBy(desc(matches.createdAt));
+  }
+
+  /**
+   * 특정 구인자가 여러 구직자에게 보낸 매치 요청 조회
+   * @param recruiterWalletAddress 구인자 지갑 주소
+   * @param applicantIds 구직자 ID 배열
+   * @returns 매치 배열
+   */
+  async findByRecruiterAndApplicantIds(
+    recruiterWalletAddress: string,
+    applicantIds: string[]
+  ) {
+    if (applicantIds.length === 0) {
+      return [];
+    }
+
+    return await db
+      .select()
+      .from(matches)
+      .where(
+        and(
+          eq(matches.recruiterWalletAddress, recruiterWalletAddress),
+          inArray(matches.applicantId, applicantIds)
+        )
+      );
   }
 
   /**

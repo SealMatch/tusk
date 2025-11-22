@@ -1,6 +1,6 @@
 import { db } from "@/server/db";
 import { applicants } from "@/server/db/schema/applicants.schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { CreateApplicantData, CreateApplicantResult, SearchResultItem } from "./applicants.type";
 
 /**
@@ -55,6 +55,24 @@ export class ApplicantsRepository {
       .limit(1);
 
     return applicant || null;
+  }
+
+  /**
+   * 여러 ID로 지원자 조회
+   * @param ids 지원자 ID 배열
+   * @returns 지원자 배열
+   */
+  async findByIds(ids: string[]) {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const results = await db
+      .select()
+      .from(applicants)
+      .where(inArray(applicants.id, ids));
+
+    return results;
   }
 
   /**
