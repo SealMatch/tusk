@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; 
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { Button, Badge } from '@/clients/shared/ui';
 import { formatAddress } from '@/clients/shared/utils';
@@ -136,11 +136,6 @@ export default function ProfilePage() {
             <div className="relative p-6 sm:p-8">
               <div className="mb-6 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  </span>
-                  <span className="text-gray-300">Online</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Clock className="h-4 w-4" />
