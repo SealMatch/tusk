@@ -129,13 +129,6 @@ class ApplicantsService {
   }
 
   /**
-   * Blob ID로 지원자 조회
-   */
-  async getApplicantByBlobId(blobId: string) {
-    return applicantsRepository.findByBlobId(blobId);
-  }
-
-  /**
    * 검색어로 지원자 검색
    * 1. 검색어를 벡터로 임베딩
    * 2. pgvector로 유사도 검색
