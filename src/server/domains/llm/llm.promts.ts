@@ -11,7 +11,7 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
 {
   "position": "Primary job position (e.g., Backend Developer, Frontend Engineer, Full-stack Developer, DevOps Engineer, etc.)",
   "techStack": ["JavaScript", "React", "Node.js", "PostgreSQL", "Docker", "AWS", ...],
-  "careerDetail": "Objective third-party evaluation highlighting this candidate's key strengths and competitive advantages"
+  "aiSummary": "Objective third-party evaluation highlighting this candidate's key strengths and competitive advantages"
 }
 
 **Analysis Guidelines:**
@@ -23,7 +23,7 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
    - DevOps & Cloud tools (e.g., Docker, Kubernetes, AWS, GCP, Azure, Jenkins)
    - Development tools (e.g., Git, Jira, Figma)
    - Maximum 10 most relevant items
-3. careerDetail: Write an objective third-party evaluation (around 5-7 sentences) that:
+3. aiSummary: Write an objective third-party evaluation (around 5-7 sentences) that:
    - Uses third-person perspective (e.g., "This candidate demonstrates...", "They possess...", "이 후보자는...", "그는/그녀는...")
    - Highlights measurable achievements and quantifiable results (e.g., "improved performance by 40%", "led a team of 5 engineers")
    - Identifies unique competitive advantages and differentiators
@@ -37,9 +37,9 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
 - MUST respond ONLY in valid JSON format
 - Return pure JSON without any comments or explanations
 - Use empty string ("") or empty array ([]) if information is unclear
-- The language of all text fields (position, techStack, careerDetail) MUST match the resume's primary language
+- The language of all text fields (position, techStack, aiSummary) MUST match the resume's primary language
 - For techStack, use standard technology names (keep English names for technologies even if resume is in another language)
-- For careerDetail, adopt a professional third-party evaluator's perspective, not the candidate's voice
+- For , adopt a professional third-party evaluator's perspective, not the candidate's voice
 `;
 
 export const PREPROCESS_FOR_EMBEDDING_PROMPT = `

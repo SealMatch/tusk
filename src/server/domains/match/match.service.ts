@@ -2,7 +2,7 @@ import { Match } from "@/server/db/schema/matches.schema";
 import { Result } from "@/server/shared/types/result.type";
 import { ApplicantsRepository, applicantsRepository } from "../applicants/applicants.repository";
 import { MatchRepository, matchRepository } from "./match.repository";
-import { CreateMatchParams, UpdateMatchStatusParams } from "./match.type";
+import { CreateMatchParams, ProfilePageDataResponse, UpdateMatchStatusParams } from "./match.type";
 
 /**
  * Match Service
@@ -196,6 +196,76 @@ class MatchService {
       };
     } catch (error) {
       console.error("❌ Error updating match status:", error);
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          errorMessage: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        errorMessage: "Unknown error occurred",
+      };
+    }
+  }
+
+  /**
+   * 프로필 페이지 데이터 조회
+   * walletAddress를 기준으로 요청한 매치(requestedList)와 받은 매치(receivedList)를 구분하여 반환
+   */
+  async getProfilePageData(
+    walletAddress: string
+  ): Promise<Result<ProfilePageDataResponse>> {
+    try {
+      console.log("🔍 Fetching profile page data for wallet:", walletAddress);
+
+      // 1. 해당 지갑 주소의 applicant 조회
+      const applicant = await this.applicantsRepository.findByWalletAddress(walletAddress);
+
+      // 2. recruiter로서 요청한 매치 목록 조회
+      const requestedMatches = await this.matchRepository.findByRecruiter(walletAddress);
+
+      // 3. applicant로서 받은 매치 목록 조회
+      const receivedMatches = applicant
+        ? await this.matchRepository.findByApplicant(applicant.id)
+        : [];
+
+      // 4. requestedList 구성 (recruiter가 요청한 매치)
+      const requestedApplicantIds = requestedMatches.map((m) => m.applicantId);
+      const requestedApplicants = await this.applicantsRepository.findByIds(
+        requestedApplicantIds
+      );
+
+      const requestedList = requestedMatches.map((match) => {
+        const applicantData = requestedApplicants.find((a) => a.id === match.applicantId);
+        return {
+          match,
+          applicant: applicantData!,
+        };
+      });
+
+      // 5. receivedList 구성 (applicant가 받은 매치)
+      const receivedList = receivedMatches.map((match) => ({
+        match,
+        applicant: applicant!,
+      }));
+
+      console.log("✅ Profile page data fetched:", {
+        requestedCount: requestedList.length,
+        receivedCount: receivedList.length,
+      });
+
+      return {
+        success: true,
+        data: {
+          requestedList,
+          receivedList,
+        },
+      };
+    } catch (error) {
+      console.error("❌ Error fetching profile page data:", error);
 
       if (error instanceof Error) {
         return {

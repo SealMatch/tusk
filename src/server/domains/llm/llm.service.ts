@@ -76,7 +76,7 @@ class LLMService {
         data: {
           position: parsed.position,
           techStack: parsed.techStack,
-          careerDetail: parsed.careerDetail || "",
+          aiSummary: parsed.aiSummary || "",
         },
       };
     } catch (error) {

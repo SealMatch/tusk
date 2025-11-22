@@ -4,11 +4,62 @@ import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Get search histories by recruiter
- * GET /api/v1/histories?recruiterAddress=0x...
- *
- * @param request
- * @returns Search history list
+ * @openapi
+ * /api/v1/histories:
+ *   get:
+ *     summary: 검색 이력 조회
+ *     description: 채용자의 검색 이력을 조회합니다.
+ *     tags:
+ *       - Histories
+ *     parameters:
+ *       - in: query
+ *         name: recruiterAddress
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 채용자 지갑 주소
+ *         example: "0xabcdef1234567890"
+ *     responses:
+ *       200:
+ *         description: 검색 이력 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/History'
+ *       400:
+ *         description: 잘못된 요청 (파라미터 누락 또는 잘못된 지갑 주소 형식)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "recruiterAddress parameter is required"
+ *       500:
+ *         description: 내부 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function GET(
   request: NextRequest

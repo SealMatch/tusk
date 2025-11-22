@@ -1,3 +1,6 @@
+import { Match } from "@/server/db/schema/matches.schema";
+import { Applicant } from "../applicants/applicants.type";
+
 /**
  * Match status type
  */
@@ -30,4 +33,14 @@ export interface UpdateMatchStatusParams {
   matchId: string;
   status: MatchStatus;
   applicantWalletAddress: string;
+}
+
+export interface ProfilePageDataResponse {
+  requestedList: ProfilePageDataItem[];
+  receivedList: ProfilePageDataItem[];
+}
+
+export interface ProfilePageDataItem {
+  applicant: Applicant;
+  match: Match;
 }

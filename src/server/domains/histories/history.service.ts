@@ -1,13 +1,10 @@
 import { History } from "@/server/db/schema/histories.schema";
 import { Result } from "@/server/shared/types/result.type";
-import {
-  HistoryRepository,
-  historyRepository,
-} from "./history.repository";
+import { HistoryRepository, historyRepository } from "./history.repository";
 
-import { SearchResultCard, SearchResultItem } from "./history.type";
 import { applicantsRepository } from "../applicants/applicants.repository";
 import { matchRepository } from "../match/match.repository";
+import { SearchResultCard, SearchResultItem } from "./history.type";
 
 /**
  * 검색 이력 생성 파라미터
@@ -85,9 +82,10 @@ class HistoryService {
         recruiterWalletAddress
       );
 
-      const histories = await this.historyRepository.findSearchHistoriesByRecruiter(
-        recruiterWalletAddress
-      );
+      const histories =
+        await this.historyRepository.findSearchHistoriesByRecruiter(
+          recruiterWalletAddress
+        );
 
       console.log("✅ Found", histories.length, "search histories");
 
