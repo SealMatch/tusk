@@ -4,15 +4,15 @@ import useExecOnChain from "./useExecOnChain";
 export type RejectAccessParams = {
     viewRequestId: string;
     policyObjectId: string;
-    adminCapId: string;
 }
 
-export const useRejectAccess = ({ viewRequestId, policyObjectId, adminCapId }: RejectAccessParams) => {
+export const useRejectAccess = () => {
     const { exec } = useExecOnChain();
 
-    const handleRejectAccess = async () => {
-        const tx = rejectViewRequestTx(viewRequestId, policyObjectId, adminCapId);
+    const handleRejectAccess = async ({ viewRequestId, policyObjectId }: RejectAccessParams) => {
+        const tx = rejectViewRequestTx(viewRequestId, policyObjectId);
         const result = await exec(tx);
+        return result;
     };
 
     return {

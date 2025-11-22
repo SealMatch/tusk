@@ -23,17 +23,9 @@ export function AccessControlPanel({ policyObjectId, adminCapId }: AccessControl
         accessPrice,
     });
 
-    const { handleApproveAccess } = useApproveAccess({
-        viewRequestId,
-        policyObjectId,
-        adminCapId,
-    });
+    const { handleApproveAccess } = useApproveAccess();
 
-    const { handleRejectAccess } = useRejectAccess({
-        viewRequestId,
-        policyObjectId,
-        adminCapId,
-    });
+    const { handleRejectAccess } = useRejectAccess();
 
     const onRequestAccess = async () => {
         setIsRequesting(true);
@@ -60,7 +52,11 @@ export function AccessControlPanel({ policyObjectId, adminCapId }: AccessControl
         setIsApproving(true);
         setError(null);
         try {
-            await handleApproveAccess();
+            await handleApproveAccess({
+                viewRequestId,
+                policyObjectId,
+                adminCapId,
+            });
             console.log("Access approved for:", viewRequestId);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Approval failed");
@@ -78,7 +74,10 @@ export function AccessControlPanel({ policyObjectId, adminCapId }: AccessControl
         setIsRejecting(true);
         setError(null);
         try {
-            await handleRejectAccess();
+            await handleRejectAccess({
+                viewRequestId,
+                policyObjectId,
+            });
             console.log("Access rejected for:", viewRequestId);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Rejection failed");

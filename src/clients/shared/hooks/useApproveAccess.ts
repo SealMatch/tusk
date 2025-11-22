@@ -7,12 +7,13 @@ export type ApproveAccessParams = {
     adminCapId: string;
 }
 
-export const useApproveAccess = ({ viewRequestId, policyObjectId, adminCapId }: ApproveAccessParams) => {
+export const useApproveAccess = () => {
     const { exec } = useExecOnChain();
 
-    const handleApproveAccess = async () => {
+    const handleApproveAccess = async ({ viewRequestId, policyObjectId, adminCapId }: ApproveAccessParams) => {
         const tx = approveViewRequestTx(viewRequestId, policyObjectId, adminCapId);
         const result = await exec(tx);
+        return result;
     };
 
     return {
