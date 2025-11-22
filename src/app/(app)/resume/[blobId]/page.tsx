@@ -1,8 +1,12 @@
 "use client";
 
 import { SkillBadge } from "@/clients/shared/components";
-import { usePermissionRequest, usePdfDownload } from "@/clients/shared/hooks";
-import { getMockResumeDetail, DEV_CURRENT_COMPANY } from "@/clients/shared/mocks";
+import {
+  usePermissionRequest,
+  usePdfDownload,
+  useViewRequestStatus,
+} from "@/clients/shared/hooks";
+import { getMockResumeDetail } from "@/clients/shared/mocks";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
@@ -12,7 +16,9 @@ export default function ResumeDetailPage() {
   const params = useParams();
   const blobId = params.blobId as string;
   const currentAccount = useCurrentAccount();
-  const companyAddress = currentAccount?.address || DEV_CURRENT_COMPANY;
+
+  // 지갑이 연결된 상태에서만 이 페이지에 접근 가능 (layout.tsx에서 체크)
+  const companyAddress = currentAccount!.address;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["resume", blobId, companyAddress],
@@ -23,13 +29,19 @@ export default function ResumeDetailPage() {
   const { requestPermission, isPending } = usePermissionRequest({
     blobId,
     companyAddress,
-    currentAccountAddress: currentAccount?.address,
+    currentAccountAddress: companyAddress,
   });
 
   const { downloadStatus, isDownloading, handleDownload } = usePdfDownload({
     blobId,
     sealPolicyId: data?.resume.sealPolicyId,
-    currentAccountAddress: currentAccount?.address,
+    currentAccountAddress: companyAddress,
+  });
+
+  // 블록체인에서 실제 ViewRequest 상태 조회
+  const { data: onChainStatus } = useViewRequestStatus({
+    recruiterAddress: companyAddress,
+    candidateId: blobId,
   });
 
   if (isLoading) {
@@ -48,8 +60,8 @@ export default function ResumeDetailPage() {
     );
   }
 
-  const { resume, myPermissionStatus } = data;
-  const isConnected = !!(currentAccount?.address || DEV_CURRENT_COMPANY);
+  const { resume } = data;
+  const myPermissionStatus = onChainStatus ?? null;
 
   return (
     <div className="flex-1 flex justify-center p-6">
@@ -86,7 +98,6 @@ export default function ResumeDetailPage() {
 
           <div className="mt-8">
             <ResumeActionButton
-              isConnected={isConnected}
               myPermissionStatus={myPermissionStatus}
               isDownloading={isDownloading}
               downloadStatus={downloadStatus}

@@ -2,11 +2,9 @@
 
 import { Button } from "@/clients/shared/ui";
 import type { PermissionStatus } from "@/clients/shared/types";
-import { ConnectModal } from "@mysten/dapp-kit";
-import { Download, Clock, CheckCircle, XCircle, Wallet, Loader2 } from "lucide-react";
+import { Download, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 interface ResumeActionButtonProps {
-  isConnected: boolean;
   myPermissionStatus: PermissionStatus | null;
   isDownloading: boolean;
   downloadStatus: string;
@@ -16,7 +14,6 @@ interface ResumeActionButtonProps {
 }
 
 export function ResumeActionButton({
-  isConnected,
   myPermissionStatus,
   isDownloading,
   downloadStatus,
@@ -24,22 +21,6 @@ export function ResumeActionButton({
   onDownload,
   onRequestPermission,
 }: ResumeActionButtonProps) {
-  if (!isConnected) {
-    return (
-      <ConnectModal
-        trigger={
-          <Button
-            variant="default"
-            className="w-full h-12 gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Wallet className="h-5 w-5" />
-            지갑 연결하고 권한 요청
-          </Button>
-        }
-      />
-    );
-  }
-
   if (myPermissionStatus === "approved") {
     return (
       <div className="space-y-2">
