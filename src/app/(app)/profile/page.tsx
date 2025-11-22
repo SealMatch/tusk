@@ -217,7 +217,6 @@ export default function ProfilePage() {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex-1">
                         <h3 className="mb-1 text-lg font-semibold text-white">{request.name}</h3>
-                        <p className="mb-2 text-sm text-gray-400">{request.email}</p>
                         <p className="text-xs text-gray-500">{request.timestamp}</p>
                       </div>
                       <div className="flex items-center gap-3">
