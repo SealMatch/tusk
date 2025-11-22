@@ -5,13 +5,15 @@ import {
   historyRepository,
 } from "./history.repository";
 
+import { SearchResultItem } from "./history.type";
+
 /**
  * 검색 이력 생성 파라미터
  */
 export interface CreateSearchHistoryParams {
   recruiterWalletAddress: string;
   query: string;
-  applicantIds: string[];
+  results: SearchResultItem[];
 }
 
 /**
@@ -35,14 +37,14 @@ class HistoryService {
       console.log("💾 Creating search history:", {
         recruiter: params.recruiterWalletAddress,
         query: params.query,
-        resultCount: params.applicantIds.length,
+        resultCount: params.results.length,
       });
 
       const history = await this.historyRepository.create({
         id: crypto.randomUUID(),
         recruiterWalletAddress: params.recruiterWalletAddress,
         query: params.query,
-        result: params.applicantIds,
+        result: params.results,
         createdAt: new Date(),
       });
 

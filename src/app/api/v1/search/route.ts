@@ -65,14 +65,19 @@ export async function GET(
     const recruiterWalletAddress = request.headers.get("x-wallet-address");
 
     if (recruiterWalletAddress && result.data) {
-      const applicantIds = result.data.results.map((r) => r.id);
+      // Map search results to SearchResultItem format
+      const searchResultItems = result.data.results.map((r) => ({
+        applicantId: r.id,
+        similarity: r.similarity,
+        createdAt: r.createdAt,
+      }));
 
       // Save history in background (don't await)
       historyService
         .createSearchHistory({
           recruiterWalletAddress,
           query: query.trim(),
-          applicantIds,
+          results: searchResultItems,
         })
         .catch((err) => {
           console.warn("⚠️ Failed to save search history:", err);

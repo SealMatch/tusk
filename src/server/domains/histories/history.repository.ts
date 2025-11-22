@@ -18,7 +18,7 @@ export class HistoryRepository {
         id: params.id,
         recruiterWalletAddress: params.recruiterWalletAddress,
         query: params.query,
-        applicantIds: params.result, // result는 applicantId[] 타입
+        results: params.result,
         createdAt: params.createdAt,
       })
       .returning();
