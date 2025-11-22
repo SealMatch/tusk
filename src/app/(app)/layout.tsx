@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/clients/shared/components/header";
+import { AppHeader } from "@/clients/shared/components/header";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
   return (
     <div className="bg-[#2f2f2f] flex flex-col min-h-screen">
-      <Header />
+      <AppHeader />
       {children}
     </div>
   );
