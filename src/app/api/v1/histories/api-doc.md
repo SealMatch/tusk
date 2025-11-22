@@ -28,8 +28,12 @@
       "id": "3690d570-3d54-4e6a-b84f-631d72a1d711",
       "recruiterWalletAddress": "0x1234567890abcdef1234567890abcdef12345678",
       "query": "React developer",
-      "applicantIds": [
-        "f99db28d-81fa-4eaf-b054-a6a7dfecf169"
+      "results": [
+        {
+          "applicantId": "f99db28d-81fa-4eaf-b054-a6a7dfecf169",
+          "similarity": 0.85,
+          "createdAt": "2025-11-22T06:17:27.745Z"
+        }
       ],
       "createdAt": "2025-11-22T06:17:27.745Z"
     }
@@ -46,7 +50,10 @@
 | `data[].id` | string (uuid) | 검색 이력 고유 ID |
 | `data[].recruiterWalletAddress` | string | 구인자 지갑 주소 |
 | `data[].query` | string | 검색 쿼리 |
-| `data[].applicantIds` | string[] | 검색 결과로 반환된 구직자 ID 배열 |
+| `data[].results` | SearchResultItem[] | 검색 결과 상세 정보 배열 |
+| `data[].results[].applicantId` | string | 구직자 ID |
+| `data[].results[].similarity` | number | 유사도 점수 (0~1) |
+| `data[].results[].createdAt` | string (ISO 8601) | 검색 결과 생성 시각 |
 | `data[].createdAt` | string (ISO 8601) | 검색 시각 |
 
 #### Error Responses
@@ -98,8 +105,12 @@ curl "http://localhost:3000/api/v1/histories?recruiterAddress=0x1234567890abcdef
       "id": "3690d570-3d54-4e6a-b84f-631d72a1d711",
       "recruiterWalletAddress": "0x1234567890abcdef1234567890abcdef12345678",
       "query": "React developer",
-      "applicantIds": [
-        "f99db28d-81fa-4eaf-b054-a6a7dfecf169"
+      "results": [
+        {
+          "applicantId": "f99db28d-81fa-4eaf-b054-a6a7dfecf169",
+          "similarity": 0.92,
+          "createdAt": "2025-11-22T06:17:27.745Z"
+        }
       ],
       "createdAt": "2025-11-22T06:17:27.745Z"
     },
@@ -107,9 +118,17 @@ curl "http://localhost:3000/api/v1/histories?recruiterAddress=0x1234567890abcdef
       "id": "2580d460-2c43-3d5a-a73e-520c61a0c600",
       "recruiterWalletAddress": "0x1234567890abcdef1234567890abcdef12345678",
       "query": "Senior backend engineer",
-      "applicantIds": [
-        "a88cb17c-70ea-3dae-9043-95a6cfdbb058",
-        "b99dc28e-81fb-4ebf-b165-b7b8egedf270"
+      "results": [
+        {
+          "applicantId": "a88cb17c-70ea-3dae-9043-95a6cfdbb058",
+          "similarity": 0.88,
+          "createdAt": "2025-11-22T05:10:15.123Z"
+        },
+        {
+          "applicantId": "b99dc28e-81fb-4ebf-b165-b7b8egedf270",
+          "similarity": 0.76,
+          "createdAt": "2025-11-22T05:10:15.123Z"
+        }
       ],
       "createdAt": "2025-11-22T05:10:15.123Z"
     }
@@ -155,7 +174,10 @@ curl "http://localhost:3000/api/v1/histories?recruiterAddress=invalid-address"
 
 - 검색 이력은 `/api/v1/search` API 호출 시 자동으로 저장됩니다
 - 검색 이력은 `createdAt` 기준 **최신순**으로 정렬되어 반환됩니다
-- `applicantIds` 배열은 해당 검색에서 반환된 구직자들의 ID 목록입니다
+- `results` 배열에는 각 검색 결과의 상세 정보가 포함됩니다:
+  - `applicantId`: 구직자 ID
+  - `similarity`: 검색 쿼리와의 유사도 점수 (0~1 범위, 높을수록 관련성 높음)
+  - `createdAt`: 검색 결과 생성 시각
 - 검색 이력은 비동기적으로 저장되므로, `/api/v1/search` 응답 직후 바로 조회하면 나타나지 않을 수 있습니다 (일반적으로 수백ms 이내 저장)
 
 ### Related APIs
@@ -169,7 +191,7 @@ CREATE TABLE histories (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   recruiter_wallet_address text NOT NULL,
   query text NOT NULL,
-  applicant_ids text[] NOT NULL,
+  results jsonb NOT NULL,
   created_at timestamp DEFAULT now() NOT NULL
 );
 
@@ -178,6 +200,17 @@ CREATE INDEX histories_recruiter_wallet_address_idx
 
 CREATE INDEX histories_created_at_idx
   ON histories USING btree (created_at);
+```
+
+**results JSONB 구조:**
+```json
+[
+  {
+    "applicantId": "uuid",
+    "similarity": 0.85,
+    "createdAt": "2025-11-22T06:17:27.745Z"
+  }
+]
 ```
 
 ### Implementation

@@ -1,4 +1,5 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { SearchResultItem } from "@/server/domains/histories/history.type";
 
 export const histories = pgTable(
   "histories",
@@ -6,7 +7,7 @@ export const histories = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     recruiterWalletAddress: text("recruiter_wallet_address").notNull(),
     query: text("query").notNull(),
-    applicantIds: text("applicant_ids").array().notNull(),
+    results: jsonb("results").notNull().$type<SearchResultItem[]>(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
