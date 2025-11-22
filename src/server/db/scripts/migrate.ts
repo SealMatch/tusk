@@ -1,6 +1,9 @@
-import postgres from "postgres";
+import { config } from "dotenv";
 import { readFileSync } from "fs";
 import { join } from "path";
+import postgres from "postgres";
+
+config({ path: ".env.local" });
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -22,7 +25,7 @@ async function migrate() {
     // 마이그레이션 SQL 파일 읽기
     const migrationPath = join(
       process.cwd(),
-      "src/server/db/drizzle/migrations/0000_fixed_iron_fist.sql"
+      "src/server/db/drizzle/migrations/0001_glamorous_lord_tyger.sql"
     );
     const migrationSQL = readFileSync(migrationPath, "utf-8");
 

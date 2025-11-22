@@ -1,0 +1,22 @@
+{
+  "results": [
+    {
+      "blobId": "blob_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz",
+      "skills": [
+        "React",
+        "TypeScript",
+        "Next.js",
+        "Node.js",
+        "PostgreSQL",
+        "AWS",
+        "Docker",
+        "GraphQL"
+      ],
+      "position": "시니어 풀스택 개발자",
+      "introduction": "사용자 경험을 최우선으로 생각하는 개발자입니다. 클린 코드와 테스트 주도 개발을 실천하며, 팀 내 기술 공유를 적극적으로 진행합니다.",
+      "similarity": 0.85,
+      "createdAt": "2025-11-20T10:30:00.000Z"
+    }
+  ],
+  "total": 1
+}
