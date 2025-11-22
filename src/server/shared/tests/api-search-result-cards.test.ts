@@ -1,7 +1,7 @@
-const API_URL = "http://localhost:3000/api/v1/search/result-cards";
+const API_URL = "http://localhost:3000/api/v1/histories/result-cards";
 
 /**
- * Test POST /api/v1/search/result-cards
+ * Test POST /api/v1/histories/result-cards
  *
  * Prerequisites:
  * 1. Server must be running (npm run dev)
@@ -10,7 +10,7 @@ const API_URL = "http://localhost:3000/api/v1/search/result-cards";
  *    - At least one match record for that applicant
  */
 async function testSearchResultCards() {
-  console.log("🧪 Testing POST /api/v1/search/result-cards...\n");
+  console.log("🧪 Testing POST /api/v1/histories/result-cards...\n");
 
   // Request body using actual test data from database
   const requestBody = {
@@ -184,7 +184,7 @@ async function checkServer() {
 
 async function main() {
   console.log("=" .repeat(80));
-  console.log("  POST /api/v1/search/result-cards - API Test Suite");
+  console.log("  POST /api/v1/histories/result-cards - API Test Suite");
   console.log("=".repeat(80) + "\n");
 
   const isServerRunning = await checkServer();

@@ -17,11 +17,106 @@ const createApplicantSchema = z.object({
 });
 
 /**
- * 지원자 등록
- * POST /api/v1/applicants
- *
- * @param request
- * @returns 201 Created with applicant id
+ * @openapi
+ * /api/v1/applicants:
+ *   post:
+ *     summary: 지원자 등록
+ *     description: 새로운 지원자를 시스템에 등록합니다. AI 요약과 기술 스택 정보를 포함합니다.
+ *     tags:
+ *       - Applicants
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - handle
+ *               - walletAddress
+ *               - position
+ *               - techStack
+ *               - aiSummary
+ *             properties:
+ *               handle:
+ *                 type: string
+ *                 description: 사용자 핸들
+ *                 example: "john_dev"
+ *               walletAddress:
+ *                 type: string
+ *                 description: 지갑 주소
+ *                 example: "0x1234567890abcdef"
+ *               position:
+ *                 type: string
+ *                 description: 직무
+ *                 example: "Frontend Developer"
+ *               techStack:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: 기술 스택 목록
+ *                 example: ["React", "TypeScript", "Next.js"]
+ *               aiSummary:
+ *                 type: string
+ *                 description: AI 생성 요약
+ *                 example: "3년 경력의 프론트엔드 개발자..."
+ *               blobId:
+ *                 type: string
+ *                 description: Blob ID (선택)
+ *                 example: "blob_123"
+ *               sealPolicyId:
+ *                 type: string
+ *                 description: Seal Policy ID (선택)
+ *                 example: "policy_456"
+ *               accessPrice:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: 접근 가격 (선택)
+ *                 example: 1000
+ *               isJobSeeking:
+ *                 type: boolean
+ *                 description: 구직 중 여부
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: 지원자가 성공적으로 생성됨
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: string
+ *                   description: 생성된 지원자 ID
+ *                   example: "applicant_123"
+ *       400:
+ *         description: 유효성 검증 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Validation failed"
+ *       500:
+ *         description: 내부 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function POST(
   request: NextRequest

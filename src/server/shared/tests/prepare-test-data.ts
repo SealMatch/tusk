@@ -9,7 +9,7 @@ import { desc } from "drizzle-orm";
  */
 async function checkTestData() {
   console.log("=".repeat(80));
-  console.log("  Checking Test Data for /api/v1/search/result-cards");
+  console.log("  Checking Test Data for /api/v1/histories/result-cards");
   console.log("=".repeat(80) + "\n");
 
   try {
