@@ -1,6 +1,6 @@
 import { Transaction } from "@mysten/sui/transactions";
 
-const PACKAGE_ID = "0xc3f7a4d681174eb895a6c04759d4df014c298f19193c0382bf2d232f5fc7e995";
+const PACKAGE_ID = "0x9c82c149aadc4db9e9b1efb0c16cb6e75978713dc10e669d40a01570d75d6270";
 
 export const createAccessPolicyTx = (
     initialRecruiter: string,
