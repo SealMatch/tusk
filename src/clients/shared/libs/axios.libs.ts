@@ -1,7 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 
+const isProd = process.env.VERCEL_ENV === "production";
+
 export const customAxios: AxiosInstance = axios.create({
-  baseURL: `${process.env.REACT_APP_API_BASE_URL}`,
+  baseURL: isProd
+    ? process.env.NEXT_PUBLIC_PROD_URL
+    : process.env.NEXT_PUBLIC_LOCAL_URL,
 });
 
 customAxios.interceptors.request.use(

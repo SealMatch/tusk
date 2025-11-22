@@ -11,6 +11,7 @@ export interface CreateApplicantParams {
   aiSummary: string;
   blobId?: string;
   sealPolicyId?: string;
+  encryptionId?: string;
   accessPrice?: number;
   isJobSeeking?: boolean;
 }
@@ -53,6 +54,7 @@ export interface SearchResultItem {
   aiSummary: string;
   blobId: string;
   sealPolicyId: string;
+  encryptionId: string;
   accessPrice: number;
   similarity: number;
   createdAt: Date;

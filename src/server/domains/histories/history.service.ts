@@ -184,6 +184,67 @@ class HistoryService {
       };
     }
   }
+
+  /**
+   * 검색 이력 삭제 (권한 검증 포함)
+   * @param historyId 검색 이력 ID
+   * @param recruiterWalletAddress 요청자 지갑 주소 (권한 검증용)
+   */
+  async deleteHistory(
+    historyId: string,
+    recruiterWalletAddress: string
+  ): Promise<Result<History>> {
+    try {
+      console.log("🗑️ Deleting search history:", {
+        historyId,
+        recruiter: recruiterWalletAddress,
+      });
+
+      // 1. 이력 조회
+      const history = await this.historyRepository.findById(historyId);
+
+      if (!history) {
+        console.log("❌ History not found:", historyId);
+        return {
+          success: false,
+          errorMessage: "History not found",
+        };
+      }
+
+      // 2. 권한 검증: 요청자가 이력 소유자인지 확인
+      if (history.recruiterWalletAddress !== recruiterWalletAddress) {
+        console.log("❌ Unauthorized: recruiter address mismatch");
+        return {
+          success: false,
+          errorMessage: "Unauthorized: You can only delete your own history",
+        };
+      }
+
+      // 3. 삭제 실행
+      const deletedHistory = await this.historyRepository.delete(historyId);
+
+      console.log("✅ Search history deleted:", historyId);
+
+      return {
+        success: true,
+        data: deletedHistory,
+      };
+    } catch (error) {
+      console.error("❌ Error deleting search history:", error);
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          errorMessage: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        errorMessage: "Unknown error occurred",
+      };
+    }
+  }
 }
 
 export const historyService = new HistoryService();

@@ -12,6 +12,7 @@ const createApplicantSchema = z.object({
   aiSummary: z.string().min(1, "AI summary is required"),
   blobId: z.string().optional(),
   sealPolicyId: z.string().optional(),
+  encryptionId: z.string().optional(),
   accessPrice: z.number().int().min(0).optional(),
   isJobSeeking: z.boolean().optional(),
 });
@@ -67,6 +68,10 @@ const createApplicantSchema = z.object({
  *                 type: string
  *                 description: Seal Policy ID (선택)
  *                 example: "policy_456"
+ *               encryptionId:
+ *                 type: string
+ *                 description: Encryption ID (선택)
+ *                 example: "encryption_789"
  *               accessPrice:
  *                 type: integer
  *                 minimum: 0
