@@ -1,0 +1,1 @@
+ALTER TABLE "histories" DROP COLUMN "id";

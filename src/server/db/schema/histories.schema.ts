@@ -1,5 +1,12 @@
-import { index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { SearchResultItem } from "@/server/domains/histories/history.type";
+import {
+  index,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 export const histories = pgTable(
   "histories",
@@ -11,9 +18,9 @@ export const histories = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
-    recruiterWalletAddressIdx: index("histories_recruiter_wallet_address_idx").on(
-      table.recruiterWalletAddress
-    ),
+    recruiterWalletAddressIdx: index(
+      "histories_recruiter_wallet_address_idx"
+    ).on(table.recruiterWalletAddress),
     createdAtIdx: index("histories_created_at_idx").on(table.createdAt),
   })
 );
