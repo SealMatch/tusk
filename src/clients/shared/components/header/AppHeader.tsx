@@ -4,7 +4,7 @@ import { LogoIcon } from "@/clients/shared/components/icons";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import Link from "next/link";
 
-export const AppHeader = () => {
+export default function AppHeader() {
   const currentAccount = useCurrentAccount();
 
   return (
@@ -32,4 +32,4 @@ export const AppHeader = () => {
       </div>
     </header>
   );
-};
+}

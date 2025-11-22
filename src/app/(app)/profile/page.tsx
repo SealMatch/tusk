@@ -22,7 +22,6 @@ import {
 interface AccessRequest {
   id: string;
   name: string;
-  email: string;
   timestamp: string;
   status: 'pending' | 'approved' | 'rejected';
   type: 'submitted' | 'received';
@@ -37,7 +36,6 @@ export default function ProfilePage() {
     {
       id: '1',
       name: 'Alice Johnson',
-      email: 'alice@company.com',
       timestamp: '2 hours ago',
       status: 'pending',
       type: 'submitted'
@@ -45,7 +43,6 @@ export default function ProfilePage() {
     {
       id: '2',
       name: 'Bob Smith',
-      email: 'bob@startup.io',
       timestamp: '5 hours ago',
       status: 'approved',
       type: 'submitted'
@@ -53,7 +50,6 @@ export default function ProfilePage() {
     {
       id: '3',
       name: 'Carol White',
-      email: 'carol@tech.com',
       timestamp: '1 day ago',
       status: 'rejected',
       type: 'submitted'
@@ -64,7 +60,6 @@ export default function ProfilePage() {
     {
       id: '4',
       name: 'David Brown',
-      email: 'david@example.com',
       timestamp: '1 hour ago',
       status: 'pending',
       type: 'received'
@@ -72,7 +67,6 @@ export default function ProfilePage() {
     {
       id: '5',
       name: 'Emma Davis',
-      email: 'emma@design.co',
       timestamp: '3 hours ago',
       status: 'pending',
       type: 'received'
@@ -80,7 +74,6 @@ export default function ProfilePage() {
     {
       id: '6',
       name: 'Frank Miller',
-      email: 'frank@dev.io',
       timestamp: '6 hours ago',
       status: 'approved',
       type: 'received'
