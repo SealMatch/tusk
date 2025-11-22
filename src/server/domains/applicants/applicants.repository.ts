@@ -22,6 +22,7 @@ export class ApplicantsRepository {
         aiSummary: data.aiSummary,
         blobId: data.blobId || "",
         sealPolicyId: data.sealPolicyId || "",
+        encryptionId: data.encryptionId || "",
         accessPrice: data.accessPrice || 0,
         isJobSeeking: data.isJobSeeking ?? true,
         embedding: data.embedding,
@@ -98,6 +99,7 @@ export class ApplicantsRepository {
         ai_summary as "aiSummary",
         blob_id as "blobId",
         seal_policy_id as "sealPolicyId",
+        encryption_id as "encryptionId",
         access_price as "accessPrice",
         created_at as "createdAt",
         1 - (embedding <=> ${vectorString}::vector) as similarity
