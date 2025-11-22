@@ -24,7 +24,8 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
    - Development tools (e.g., Git, Jira, Figma)
    - Maximum 10 most relevant items
 3. aiSummary: Write an objective third-party evaluation (around 5-7 sentences) that:
-   - Uses third-person perspective (e.g., "This candidate demonstrates...", "They possess...", "이 후보자는...", "그는/그녀는...")
+   - Uses third-person perspective
+   - do not metion the candidate's name
    - Highlights measurable achievements and quantifiable results (e.g., "improved performance by 40%", "led a team of 5 engineers")
    - Identifies unique competitive advantages and differentiators
    - Emphasizes technical depth and breadth of expertise
