@@ -66,6 +66,8 @@ class LLMService {
 
       const parsed = JSON.parse(jsonText) as SummaryResponse;
 
+      console.log("parsed :", parsed);
+
       // 유효성 검증
       if (!parsed.position || !Array.isArray(parsed.techStack)) {
         throw new Error("Invalid response format from Gemini");

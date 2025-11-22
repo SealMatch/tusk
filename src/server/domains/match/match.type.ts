@@ -12,6 +12,7 @@ export type MatchStatus = "pending" | "approved" | "rejected";
 export interface CreateMatchParams {
   recruiterWalletAddress: string;
   applicantId: string;
+  viewRequestId?: string;
 }
 
 /**
@@ -21,6 +22,7 @@ export interface CreateMatchData {
   id: string;
   recruiterWalletAddress: string;
   applicantId: string;
+  viewRequestId?: string;
   status: MatchStatus;
   createdAt: Date;
   updatedAt: Date;

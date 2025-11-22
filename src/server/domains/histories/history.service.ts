@@ -3,6 +3,7 @@ import { Result } from "@/server/shared/types/result.type";
 import { HistoryRepository, historyRepository } from "./history.repository";
 
 import { applicantsRepository } from "../applicants/applicants.repository";
+import { Applicant, PublicApplicant } from "../applicants/applicants.type";
 import { matchRepository } from "../match/match.repository";
 import { SearchResultCard, SearchResultItem } from "./history.type";
 
@@ -111,6 +112,43 @@ class HistoryService {
   }
 
   /**
+   * ID로 검색 이력 조회
+   */
+  async getHistoryById(historyId: string): Promise<Result<History>> {
+    try {
+      console.log("🔍 Fetching search history by ID:", historyId);
+
+      const history = await this.historyRepository.findById(historyId);
+
+      if (!history) {
+        return {
+          success: false,
+          errorMessage: "History not found",
+        };
+      }
+
+      return {
+        success: true,
+        data: history,
+      };
+    } catch (error) {
+      console.error("❌ Error fetching search history:", error);
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          errorMessage: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        errorMessage: "Unknown error occurred",
+      };
+    }
+  }
+
+  /**
    * 검색 결과를 SearchResultCard로 변환
    * - match는 있으면 포함, 없으면 null
    */
@@ -134,32 +172,49 @@ class HistoryService {
         };
       }
 
-      // 2. Parallel queries
-      const [applicantsArray, matchesArray] = await Promise.all([
-        applicantsRepository.findByIds(applicantIds),
-        matchRepository.findByRecruiterAndApplicantIds(
-          recruiterWalletAddress,
-          applicantIds
-        ),
-      ]);
-
-      // 3. Create maps for quick lookup
-      const applicantsMap = new Map(
-        applicantsArray.map((applicant) => [applicant.id, applicant])
+      // 2. Fetch matches (always needed for dynamic status)
+      const matchesArray = await matchRepository.findByRecruiterAndApplicantIds(
+        recruiterWalletAddress,
+        applicantIds
       );
+
       const matchesMap = new Map(
         matchesArray.map((match) => [match.applicantId, match])
       );
 
-      // 4. Combine (applicant가 있는 항목만, match는 선택적)
+      // 3. Construct result cards
+      // Strategy: Fetch from DB first (to ensure we get existing data). 
+      // If not found in DB, fall back to snapshot (for deleted applicants).
+
+      // Fetch all applicants from DB
+      const fetchedApplicants = await applicantsRepository.findByIds(applicantIds);
+      const applicantsMap = new Map(fetchedApplicants.map(a => [a.id, a]));
+
       const resultCards: SearchResultCard[] = results
-        .filter((item) => applicantsMap.has(item.applicantId))
-        .map((item) => ({
-          applicant: applicantsMap.get(item.applicantId)!,
-          match: matchesMap.get(item.applicantId) ?? null,
-          similarity: item.similarity,
-          createdAt: item.createdAt,
-        }));
+        .map((item) => {
+          let publicApplicant: PublicApplicant | null = null;
+
+          // 1. Try DB
+          const dbApplicant = applicantsMap.get(item.applicantId);
+          if (dbApplicant) {
+            const { embedding, ...rest } = dbApplicant;
+            publicApplicant = rest;
+          }
+          // 2. Fallback to snapshot
+          else if (item.snapshot) {
+            publicApplicant = item.snapshot;
+          }
+
+          if (!publicApplicant) return null;
+
+          return {
+            applicant: publicApplicant,
+            match: matchesMap.get(item.applicantId) ?? null,
+            similarity: item.similarity,
+            createdAt: item.createdAt,
+          };
+        })
+        .filter((card): card is SearchResultCard => card !== null);
 
       console.log("✅ Result cards created:", resultCards.length);
 

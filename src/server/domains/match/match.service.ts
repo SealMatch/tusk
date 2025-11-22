@@ -64,6 +64,7 @@ class MatchService {
         id: crypto.randomUUID(),
         recruiterWalletAddress: params.recruiterWalletAddress,
         applicantId: params.applicantId,
+        viewRequestId: params.viewRequestId,
         status: "pending",
         createdAt: new Date(),
         updatedAt: new Date(),

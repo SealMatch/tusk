@@ -21,6 +21,7 @@ export class ApplicantsRepository {
         techStack: data.techStack,
         aiSummary: data.aiSummary,
         blobId: data.blobId || "",
+        capId: data.capId || "",
         sealPolicyId: data.sealPolicyId || "",
         encryptionId: data.encryptionId || "",
         accessPrice: data.accessPrice || 0,
@@ -94,14 +95,19 @@ export class ApplicantsRepository {
       SELECT
         id,
         handle,
+        wallet_address as "walletAddress",
         position,
         tech_stack as "techStack",
+        introduction,
         ai_summary as "aiSummary",
         blob_id as "blobId",
         seal_policy_id as "sealPolicyId",
         encryption_id as "encryptionId",
         access_price as "accessPrice",
+        access_list as "accessList",
+        is_job_seeking as "isJobSeeking",
         created_at as "createdAt",
+        updated_at as "updatedAt",
         1 - (embedding <=> ${vectorString}::vector) as similarity
       FROM applicants
       WHERE is_job_seeking = true

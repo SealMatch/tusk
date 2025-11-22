@@ -12,6 +12,7 @@ export interface CreateApplicantParams {
   blobId?: string;
   sealPolicyId?: string;
   encryptionId?: string;
+  capId?: string;
   accessPrice?: number;
   isJobSeeking?: boolean;
 }
@@ -27,6 +28,11 @@ export interface CreateApplicantData extends CreateApplicantParams {
  * 지원자 조회 결과
  */
 export type Applicant = typeof applicants.$inferSelect;
+
+/**
+ * 공개용 지원자 정보 (임베딩 제외)
+ */
+export type PublicApplicant = Omit<Applicant, "embedding">;
 
 /**
  * 지원자 생성 결과
@@ -46,18 +52,8 @@ export interface SearchApplicantsParams {
 /**
  * 검색 결과 아이템
  */
-export interface SearchResultItem {
-  id: string;
-  handle: string;
-  position: string;
-  techStack: string[];
-  aiSummary: string;
-  blobId: string;
-  sealPolicyId: string;
-  encryptionId: string;
-  accessPrice: number;
+export interface SearchResultItem extends PublicApplicant {
   similarity: number;
-  createdAt: Date;
 }
 
 /**
