@@ -22,26 +22,37 @@ async function migrate() {
     await sql`CREATE EXTENSION IF NOT EXISTS vector`;
     console.log("✅ pgvector extension enabled");
 
-    // 마이그레이션 SQL 파일 읽기
-    const migrationPath = join(
-      process.cwd(),
-      "src/server/db/drizzle/migrations/0002_tired_steve_rogers.sql"
-    );
-    const migrationSQL = readFileSync(migrationPath, "utf-8");
+    // 실행할 마이그레이션 파일 목록 (0003~0005)
+    const migrationFiles = [
+      "0003_famous_celestials.sql",
+      "0004_lean_captain_cross.sql",
+      "0005_absent_miss_america.sql",
+    ];
 
-    // SQL 문을 개별 statement로 분리
-    const statements = migrationSQL
-      .split("--> statement-breakpoint")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+    for (const fileName of migrationFiles) {
+      console.log(`📝 Executing ${fileName}...`);
 
-    console.log(`📝 Executing ${statements.length} statements...`);
+      const migrationPath = join(
+        process.cwd(),
+        "src/server/db/drizzle/migrations",
+        fileName
+      );
+      const migrationSQL = readFileSync(migrationPath, "utf-8");
 
-    for (const statement of statements) {
-      await sql.unsafe(statement);
+      // SQL 문을 개별 statement로 분리
+      const statements = migrationSQL
+        .split("--> statement-breakpoint")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      for (const statement of statements) {
+        await sql.unsafe(statement);
+      }
+
+      console.log(`✅ ${fileName} completed`);
     }
 
-    console.log("✅ Migration completed successfully!");
+    console.log("✅ All migrations completed successfully!");
   } catch (error) {
     console.error("❌ Migration failed:", error);
     process.exit(1);
