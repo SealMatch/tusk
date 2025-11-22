@@ -112,7 +112,7 @@ class HistoryService {
 
   /**
    * 검색 결과를 SearchResultCard로 변환
-   * - match가 존재하는 항목만 반환
+   * - match는 있으면 포함, 없으면 null
    */
   async getSearchResultCards(
     recruiterWalletAddress: string,
@@ -151,13 +151,12 @@ class HistoryService {
         matchesArray.map((match) => [match.applicantId, match])
       );
 
-      // 4. Filter & Combine (match가 존재하는 항목만)
+      // 4. Combine (applicant가 있는 항목만, match는 선택적)
       const resultCards: SearchResultCard[] = results
-        .filter((item) => matchesMap.has(item.applicantId))
         .filter((item) => applicantsMap.has(item.applicantId))
         .map((item) => ({
           applicant: applicantsMap.get(item.applicantId)!,
-          match: matchesMap.get(item.applicantId)!,
+          match: matchesMap.get(item.applicantId) ?? null,
           similarity: item.similarity,
           createdAt: item.createdAt,
         }));

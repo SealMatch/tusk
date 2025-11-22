@@ -2,11 +2,12 @@
 
 import { SkillBadge } from "@/clients/shared/components";
 import { customAxios } from "@/clients/shared/libs/axios.libs";
-import { SearchResultItem } from "@/server/domains/applicants/applicants.type";
+import { useHistoryStore } from "@/clients/shared/stores/history.store";
+import type { ResumeResult } from "@/clients/shared/types";
+import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 
 function SkillStackPreview({
   skills,
@@ -21,7 +22,7 @@ function SkillStackPreview({
 
   return (
     <div className="h-[44px] mb-3">
-      <p className="text-xs text-gray-400 mb-1.5 font-bold">기술 스택</p>
+      <p className="text-xs text-gray-500 mb-1.5">기술 스택</p>
       <div className="flex items-center gap-1.5 overflow-hidden">
         {displaySkills.map((skill) => (
           <SkillBadge key={skill} skill={skill} className="text-xs shrink-0" />
@@ -41,39 +42,24 @@ export default function SearchResultsPage() {
   const router = useRouter();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
-  const queryClient = useQueryClient();
+  const { results: searchResults } = useHistoryStore();
 
   const {
     data: searchResultCards,
     isLoading,
     error,
-    isSuccess,
   } = useQuery({
-    queryKey: ["selected-history-results", query, recruiterWalletAddress],
+    queryKey: ["selected-history-results", query],
     queryFn: async () => {
-      const response = await customAxios.get(`/api/v1/search`, {
-        params: {
-          query: query,
-          limit: 20,
-        },
-        headers: {
-          "X-Wallet-Address": recruiterWalletAddress,
-        },
+      const response = await customAxios.post(`/api/v1/search/result-cards`, {
+        query: query,
+        results: searchResults,
+        recruiterWalletAddress: recruiterWalletAddress,
       });
-      return response.data.data.results as SearchResultItem[];
+      return response.data.data as SearchResultCard[];
     },
-    enabled: !!query && !!recruiterWalletAddress,
-    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
+    enabled: !!query,
   });
-
-  // 검색 성공 시 이력 목록 갱신
-  useEffect(() => {
-    if (isSuccess && recruiterWalletAddress) {
-      queryClient.invalidateQueries({
-        queryKey: ["search-history", recruiterWalletAddress],
-      });
-    }
-  }, [isSuccess, recruiterWalletAddress, queryClient]);
 
   const handleCardClick = (blobId: string) => {
     router.push(`/resume/${blobId}`);
@@ -108,10 +94,24 @@ export default function SearchResultsPage() {
     return [...matched, ...unmatched];
   };
 
-  // similarity 기준 정렬
-  const sortedResults = searchResultCards
-    ? [...searchResultCards].sort((a, b) => b.similarity - a.similarity)
-    : [];
+  // SearchResultCard[]를 UI에서 사용하는 형태로 변환
+  const data = searchResultCards
+    ? {
+        total: searchResultCards.length,
+        results: searchResultCards
+          .sort((a, b) => b.similarity - a.similarity)
+          .map((card) => ({
+            id: card.applicant.id,
+            blobId: card.applicant.blobId || "",
+            position: card.applicant.position || "",
+            skills: card.applicant.techStack || [],
+            introduction: card.applicant.aiSummary || "",
+            experienceDetail: "",
+            education: "",
+            createdAt: card.createdAt.toString(),
+          })),
+      }
+    : null;
 
   if (isLoading) {
     return (
@@ -135,47 +135,42 @@ export default function SearchResultsPage() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white mb-2">Result</h1>
         <p className="text-sm text-gray-400">
-          총 {sortedResults.length}개의 결과를 찾았습니다
+          총 {data?.total || 0}개의 결과를 찾았습니다
         </p>
       </div>
 
       {/* 결과 그리드 - 3열 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedResults.map((result) => (
+        {data?.results.map((result: ResumeResult & { id: string }) => (
           <button
-            key={result.blobId}
+            key={result.id}
             onClick={() => handleCardClick(result.blobId)}
             className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[200px]"
           >
             {/* 직무 - 고정 높이 */}
-            <div className="mb-1">
-              <p className="text-white font-semibold text-base truncate text-left mb-1">
+            <div className="h-[28px] mb-1">
+              <p className="text-white font-semibold text-base truncate">
                 {result.position}
               </p>
-              <div className="flex justify-end">
-                <span className="absolute top-4 right-4 px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-semibold rounded-md">
-                  {(result.similarity * 100).toFixed(0)}%
-                </span>
-              </div>
             </div>
 
             {/* 구분선 */}
             <div className="border-t border-gray-700 my-3" />
 
             <SkillStackPreview
-              skills={result.techStack}
+              skills={result.skills}
               getSortedSkills={getSortedSkills}
             />
 
             <p className="text-sm text-gray-400 line-clamp-2 max-h-10">
-              {result.aiSummary}
+              {result.introduction}
             </p>
           </button>
         ))}
       </div>
 
       {/* 결과 없음 */}
-      {sortedResults.length === 0 && (
+      {data?.results.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <p className="text-xl font-semibold text-gray-300 mb-2">
             조건에 맞는 인재가 없어요

@@ -25,7 +25,9 @@ You are a resume analysis expert. Analyze the provided PDF resume and extract th
    - Maximum 10 most relevant items
 3. aiSummary: Write an objective third-party evaluation (around 5-7 sentences) that:
    - Uses third-person perspective
-   - do not metion the candidate's name
+   - Do not mention the candidate's name
+   - Start with the candidate's main tech stack and core experience (e.g., "Experienced in Spring Boot backend and Flutter mobile development", "Specialized in React and AWS cloud infrastructure with 5+ years", "Skilled in full-stack development using Node.js and Vue.js")
+   - Lead with concrete technical expertise and experience, then follow with achievements and competitive advantages
    - Highlights measurable achievements and quantifiable results (e.g., "improved performance by 40%", "led a team of 5 engineers")
    - Identifies unique competitive advantages and differentiators
    - Emphasizes technical depth and breadth of expertise
