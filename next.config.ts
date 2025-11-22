@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "15mb", // Server Actions 제한
+    },
+  },
 };
 
 export default nextConfig;

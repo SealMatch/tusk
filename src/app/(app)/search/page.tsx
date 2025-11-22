@@ -57,15 +57,10 @@ export default function SearchFormPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-      {/* 타이틀 */}
       <h1 className="text-3xl font-bold mb-10 text-white tracking-tight">
         어떤 인재를 찾으시나요?
       </h1>
-      {/* <p className="text-gray-400 mb-8 text-center">
-        원하는 조건을 단어 또는 문장으로 입력해주세요
-      </p> */}
 
-      {/* 검색 폼 */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-2xl space-y-4"
