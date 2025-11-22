@@ -1,8 +1,15 @@
 import { Match } from "@/server/db/schema/matches.schema";
 import { Result } from "@/server/shared/types/result.type";
-import { ApplicantsRepository, applicantsRepository } from "../applicants/applicants.repository";
+import {
+  ApplicantsRepository,
+  applicantsRepository,
+} from "../applicants/applicants.repository";
 import { MatchRepository, matchRepository } from "./match.repository";
-import { CreateMatchParams, ProfilePageDataResponse, UpdateMatchStatusParams } from "./match.type";
+import {
+  CreateMatchParams,
+  ProfilePageDataResponse,
+  UpdateMatchStatusParams,
+} from "./match.type";
 
 /**
  * Match Service
@@ -28,7 +35,9 @@ class MatchService {
       });
 
       // 1. Applicant 존재 확인
-      const applicant = await this.applicantsRepository.findById(params.applicantId);
+      const applicant = await this.applicantsRepository.findById(
+        params.applicantId
+      );
 
       if (!applicant) {
         return {
@@ -92,7 +101,9 @@ class MatchService {
     try {
       console.log("🔍 Fetching matches for recruiter:", recruiterWalletAddress);
 
-      const matches = await this.matchRepository.findByRecruiter(recruiterWalletAddress);
+      const matches = await this.matchRepository.findByRecruiter(
+        recruiterWalletAddress
+      );
 
       console.log("✅ Found", matches.length, "matches");
 
@@ -173,9 +184,14 @@ class MatchService {
       }
 
       // 2. 권한 확인 - 해당 applicant의 소유자인지 확인
-      const applicant = await this.applicantsRepository.findById(match.applicantId);
+      const applicant = await this.applicantsRepository.findById(
+        match.applicantId
+      );
 
-      if (!applicant || applicant.walletAddress !== params.applicantWalletAddress) {
+      if (
+        !applicant ||
+        applicant.walletAddress !== params.applicantWalletAddress
+      ) {
         return {
           success: false,
           errorMessage: "Unauthorized: You are not the owner of this applicant",
@@ -188,7 +204,12 @@ class MatchService {
         params.status
       );
 
-      console.log("✅ Match status updated:", updatedMatch.id, "->", updatedMatch.status);
+      console.log(
+        "✅ Match status updated:",
+        updatedMatch.id,
+        "->",
+        updatedMatch.status
+      );
 
       return {
         success: true,
@@ -222,10 +243,14 @@ class MatchService {
       console.log("🔍 Fetching profile page data for wallet:", walletAddress);
 
       // 1. 해당 지갑 주소의 applicant 조회
-      const applicant = await this.applicantsRepository.findByWalletAddress(walletAddress);
+      const applicant = await this.applicantsRepository.findByWalletAddress(
+        walletAddress
+      );
 
       // 2. recruiter로서 요청한 매치 목록 조회
-      const requestedMatches = await this.matchRepository.findByRecruiter(walletAddress);
+      const requestedMatches = await this.matchRepository.findByRecruiter(
+        walletAddress
+      );
 
       // 3. applicant로서 받은 매치 목록 조회
       const receivedMatches = applicant
@@ -239,7 +264,9 @@ class MatchService {
       );
 
       const requestedList = requestedMatches.map((match) => {
-        const applicantData = requestedApplicants.find((a) => a.id === match.applicantId);
+        const applicantData = requestedApplicants.find(
+          (a) => a.id === match.applicantId
+        );
         return {
           match,
           applicant: applicantData!,
@@ -260,6 +287,7 @@ class MatchService {
       return {
         success: true,
         data: {
+          userHandle: applicant?.handle ?? "",
           requestedList,
           receivedList,
         },

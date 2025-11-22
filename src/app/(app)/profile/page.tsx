@@ -1,8 +1,10 @@
 "use client";
 
+import { useProfilePageData } from "@/clients/shared/hooks/useProfilePageData";
 import { cn } from "@/clients/shared/libs";
 import { Badge, Button } from "@/clients/shared/ui";
-import { formatAddress } from "@/clients/shared/utils";
+import { formatAddress, testWalletAddress } from "@/clients/shared/utils";
+import { getStatusColor } from "@/clients/shared/utils/profile-page.utils";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import {
   Check,
@@ -32,53 +34,31 @@ export default function ProfilePage() {
     "submitted"
   );
 
-  const [submittedRequests] = useState<AccessRequest[]>([
-    {
-      id: "1",
-      name: "Alice Johnson",
-      timestamp: "2 hours ago",
-      status: "pending",
-      type: "submitted",
-    },
-    {
-      id: "2",
-      name: "Bob Smith",
-      timestamp: "5 hours ago",
-      status: "approved",
-      type: "submitted",
-    },
-    {
-      id: "3",
-      name: "Carol White",
-      timestamp: "1 day ago",
-      status: "rejected",
-      type: "submitted",
-    },
-  ]);
+  const { data, isLoading, error } = useProfilePageData(
+    testWalletAddress ? testWalletAddress : currentAccount?.address ?? ""
+  );
 
-  const [receivedRequests] = useState<AccessRequest[]>([
-    {
-      id: "4",
-      name: "David Brown",
-      timestamp: "1 hour ago",
-      status: "pending",
-      type: "received",
-    },
-    {
-      id: "5",
-      name: "Emma Davis",
-      timestamp: "3 hours ago",
-      status: "pending",
-      type: "received",
-    },
-    {
-      id: "6",
-      name: "Frank Miller",
-      timestamp: "6 hours ago",
-      status: "approved",
-      type: "received",
-    },
-  ]);
+  const requestedList: AccessRequest[] = useMemo(() => {
+    if (!data?.requestedList) return [];
+    return data.requestedList.map((item) => ({
+      id: item.match.id,
+      name: item.applicant.handle,
+      timestamp: new Date(item.match.createdAt).toLocaleString(),
+      status: item.match.status as "pending" | "approved" | "rejected",
+      type: "submitted" as const,
+    }));
+  }, [data]);
+
+  const receivedList: AccessRequest[] = useMemo(() => {
+    if (!data?.receivedList) return [];
+    return data.receivedList.map((item) => ({
+      id: item.match.id,
+      name: item.applicant.handle,
+      timestamp: new Date(item.match.createdAt).toLocaleString(),
+      status: item.match.status as "pending" | "approved" | "rejected",
+      type: "received" as const,
+    }));
+  }, [data]);
 
   const timeText = useMemo(() => {
     const now = new Date();
@@ -99,17 +79,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-      case "rejected":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      default:
-        return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-    }
-  };
-
   if (!currentAccount) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center">
@@ -121,6 +90,31 @@ export default function ProfilePage() {
           <p className="text-gray-400">
             Please connect your wallet to access your profile.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto" />
+          <h2 className="text-2xl font-semibold text-white">Loading...</h2>
+          <p className="text-gray-400">Fetching your profile data</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <XCircle className="w-16 h-16 text-red-400 mx-auto" />
+          <h2 className="text-2xl font-semibold text-white">Error</h2>
+          <p className="text-gray-400">Failed to load profile data</p>
+          <p className="text-sm text-red-400">{error.message}</p>
         </div>
       </div>
     );
@@ -155,7 +149,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex-1 text-center sm:text-left">
-                  <h2 className="mb-2 text-3xl font-bold">Connected User</h2>
+                  <h2 className="mb-2 text-3xl font-bold">
+                    {data?.userHandle ?? "Connected User"}
+                  </h2>
                   <p className="mb-4 text-lg text-purple-400">
                     Blockchain Identity
                   </p>
@@ -216,52 +212,77 @@ export default function ProfilePage() {
 
           {/* Request List */}
           <div className="grid gap-4">
-            {(activeTab === "submitted"
-              ? submittedRequests
-              : receivedRequests
-            ).map((request, index) => (
-              <div key={request.id}>
-                <div className="overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-xl transition-all hover:border-white/30">
-                  <div className="p-6">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex-1">
-                        <h3 className="mb-1 text-lg font-semibold text-white">{request.name}</h3>
-                        <p className="text-xs text-gray-500">{request.timestamp}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge
-                          className={cn(
-                            "rounded-full border px-3 py-1 text-xs font-medium capitalize",
-                            getStatusColor(request.status)
-                          )}
-                        >
-                          {request.status}
-                        </Badge>
-                        {activeTab === "received" &&
-                          request.status === "pending" && (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
-                              >
-                                <CheckCircle2 className="w-4 h-4 mr-1" />
-                                승인
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                              >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                거절
-                              </Button>
-                            </div>
-                          )}
+            {(activeTab === "submitted" ? requestedList : receivedList)
+              .length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="rounded-full bg-white/5 p-6 mb-4">
+                  {activeTab === "submitted" ? (
+                    <Send className="w-12 h-12 text-gray-400" />
+                  ) : (
+                    <Inbox className="w-12 h-12 text-gray-400" />
+                  )}
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  No Results Found
+                </h3>
+                <p className="text-gray-400 text-center max-w-md">
+                  {activeTab === "submitted"
+                    ? "You haven't submitted any access requests yet."
+                    : "You haven't received any access requests yet."}
+                </p>
+              </div>
+            ) : (
+              (activeTab === "submitted" ? requestedList : receivedList).map(
+                (request) => (
+                  <div key={request.id}>
+                    <div className="overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-xl transition-all hover:border-white/30">
+                      <div className="p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex-1">
+                            <h3 className="mb-1 text-lg font-semibold text-white">
+                              {request.name}
+                            </h3>
+
+                            <p className="text-xs text-gray-500">
+                              {request.timestamp}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs font-medium capitalize",
+                                getStatusColor(request.status)
+                              )}
+                            >
+                              {request.status}
+                            </Badge>
+                            {activeTab === "received" &&
+                              request.status === "pending" && (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
+                                  >
+                                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                                    승인
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                                  >
+                                    <XCircle className="w-4 h-4 mr-1" />
+                                    거절
+                                  </Button>
+                                </div>
+                              )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                )
+              )
+            )}
           </div>
         </div>
       </div>
