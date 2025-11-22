@@ -97,11 +97,11 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { historyId: string } }
+  { params }: { params: Promise<{ historyId: string }> }
 ): Promise<NextResponse<Result<{ deletedHistoryId: string }>>> {
   try {
     // 1. Extract path parameter
-    const { historyId } = params;
+    const { historyId } = await params;
 
     // 2. Extract wallet address from header
     const recruiterWalletAddress = request.headers.get("X-Wallet-Address");
