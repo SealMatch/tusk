@@ -17,11 +17,96 @@ interface SearchResultCardsBody {
 }
 
 /**
- * Get search result cards with match information
- * POST /api/v1/search/result-cards
- *
- * @param request
- * @returns SearchResultCard[] (only items with existing matches)
+ * @openapi
+ * /api/v1/search/result-cards:
+ *   post:
+ *     summary: 검색 결과 카드 조회
+ *     description: 검색 결과와 매칭 정보를 결합하여 카드 형태로 제공합니다.
+ *     tags:
+ *       - Search
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - query
+ *               - results
+ *               - recruiterWalletAddress
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: 검색 쿼리
+ *                 example: "React 개발자"
+ *               results:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - applicantId
+ *                     - similarity
+ *                     - createdAt
+ *                   properties:
+ *                     applicantId:
+ *                       type: string
+ *                       description: 지원자 ID
+ *                       example: "applicant_123"
+ *                     similarity:
+ *                       type: number
+ *                       description: 유사도 점수
+ *                       example: 0.85
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: 생성 일시 (ISO 8601)
+ *                       example: "2024-01-15T10:30:00Z"
+ *                 description: 검색 결과 목록
+ *               recruiterWalletAddress:
+ *                 type: string
+ *                 description: 채용자 지갑 주소
+ *                 example: "0xabcdef1234567890"
+ *     responses:
+ *       200:
+ *         description: 검색 결과 카드 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/SearchResultCard'
+ *       400:
+ *         description: 잘못된 요청 (필수 필드 누락 또는 유효성 검증 실패)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "recruiterWalletAddress is required"
+ *       500:
+ *         description: 내부 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function POST(
   request: NextRequest

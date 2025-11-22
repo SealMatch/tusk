@@ -5,11 +5,77 @@ import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Search applicants
- * GET /api/v1/search?query=search_term&limit=20
- *
- * @param request
- * @returns Search results with similarity scores
+ * @openapi
+ * /api/v1/search:
+ *   get:
+ *     summary: 지원자 검색
+ *     description: AI 벡터 검색을 통해 지원자를 검색합니다. 검색 이력도 자동으로 저장됩니다.
+ *     tags:
+ *       - Search
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 검색 쿼리 (자연어)
+ *         example: "React와 TypeScript 경험이 있는 개발자"
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 20
+ *         description: 검색 결과 개수
+ *         example: 20
+ *       - in: header
+ *         name: x-wallet-address
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: 채용자 지갑 주소 (검색 이력 저장용)
+ *         example: "0xabcdef1234567890"
+ *     responses:
+ *       200:
+ *         description: 검색 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/SearchResult'
+ *       400:
+ *         description: 잘못된 요청 (쿼리 누락 또는 limit 범위 초과)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Query parameter is required"
+ *       500:
+ *         description: 내부 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function GET(
   request: NextRequest

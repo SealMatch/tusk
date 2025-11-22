@@ -6,6 +6,67 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const maxDuration = 60; // 60 seconds timeout
 
+/**
+ * @openapi
+ * /api/v1/summary:
+ *   post:
+ *     summary: PDF 이력서 분석
+ *     description: PDF 형식의 이력서를 분석하여 구조화된 정보를 추출합니다.
+ *     tags:
+ *       - Summary
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - pdf
+ *             properties:
+ *               pdf:
+ *                 type: string
+ *                 format: binary
+ *                 description: PDF 이력서 파일
+ *     responses:
+ *       200:
+ *         description: PDF 분석 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/PdfAnalysisResult'
+ *       400:
+ *         description: 잘못된 요청 (PDF 파일 누락 또는 분석 실패)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "PDF file is required"
+ *       500:
+ *         description: 내부 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
 export async function POST(request: NextRequest) {
   try {
     const { files } = await parseFormData(request);

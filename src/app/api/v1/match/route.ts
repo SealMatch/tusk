@@ -4,11 +4,96 @@ import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Create match request
- * POST /api/v1/match
- *
- * @param request
- * @returns Created match
+ * @openapi
+ * /api/v1/match:
+ *   post:
+ *     summary: 매칭 요청 생성
+ *     description: 채용자가 지원자에게 매칭 요청을 생성합니다.
+ *     tags:
+ *       - Match
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - recruiterWalletAddress
+ *               - applicantId
+ *             properties:
+ *               recruiterWalletAddress:
+ *                 type: string
+ *                 description: 채용자 지갑 주소
+ *                 example: "0xabcdef1234567890"
+ *               applicantId:
+ *                 type: string
+ *                 description: 지원자 ID
+ *                 example: "applicant_123"
+ *     responses:
+ *       201:
+ *         description: 매칭이 성공적으로 생성됨
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Match'
+ *       400:
+ *         description: 필수 파라미터 누락
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "recruiterWalletAddress and applicantId are required"
+ *       404:
+ *         description: 지원자를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Applicant not found"
+ *       409:
+ *         description: 이미 매칭이 존재함
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Match already exists"
+ *       500:
+ *         description: 내부 서버 오류
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function POST(
   request: NextRequest
