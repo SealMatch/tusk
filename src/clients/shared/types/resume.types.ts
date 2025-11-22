@@ -23,6 +23,7 @@ export type ResumeResult = ResumeBase;
 // 이력서 상세 정보 (소유자 주소 포함)
 export interface ResumeDetail extends ResumeBase {
   ownerAddress: string; // 이력서 소유자(구직자)의 지갑 주소
+  sealPolicyId: string; // Seal 암호화 정책 ID (복호화 시 필요)
 }
 
 // 이력서 상세 조회 API 응답
