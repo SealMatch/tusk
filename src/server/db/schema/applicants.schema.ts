@@ -1,6 +1,6 @@
-import { sql } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -10,37 +10,47 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+// pgvector 타입 정의
+const vector = customType<{
+  data: number[];
+  driverData: string;
+  config: { length?: number };
+}>({
+  dataType(config) {
+    return `vector(${config?.length ?? 768})`;
+  },
+  toDriver(value: number[]): string {
+    return JSON.stringify(value);
+  },
+  fromDriver(value: string): number[] {
+    return JSON.parse(value);
+  },
+});
+
 export const applicants = pgTable(
   "applicants",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    name: text("name").notNull(),
+    handle: text("handle").notNull(),
     walletAddress: text("wallet_address").notNull().unique(),
 
     // Walrus/Seal 관련
-    publicBlobId: text("public_blob_id").notNull(),
-    privateBlobId: text("private_blob_id").notNull(),
-    sealPolicyId: text("seal_policy_id").notNull(),
-    pdfDataHash: text("pdf_data_hash").notNull(),
+    blobId: text("blob_id").default(""),
+    sealPolicyId: text("seal_policy_id").default(""),
 
     // 공개 정보
     position: text("position"),
     techStack: text("tech_stack").array(), // text[]
     introduction: text("introduction"),
-
-    // 상세 정보 (JSON 타입)
-    careerDetail: text("career_detail"),
-    education: jsonb("education"), // Education[]
-    experiences: jsonb("experiences"), // Experience[]
-    projects: jsonb("projects"), // Project[]
+    aiSummary: text("ai_summary"),
 
     // 접근 제어
     accessPrice: integer("access_price").default(0),
-    isJobSeeking: boolean("is_job_seeking").default(true),
     accessList: jsonb("access_list").default({}), // Record<string, boolean>
 
-    // 👈 벡터 임베딩 (Gemini embedding-001: 768차원)
-    embedding: sql`vector(768)`,
+    isJobSeeking: boolean("is_job_seeking").default(true),
+    // 벡터 임베딩 (Gemini embedding-001: 768차원)
+    embedding: vector("embedding", { length: 768 }),
 
     // 메타데이터
     createdAt: timestamp("created_at").defaultNow().notNull(),
