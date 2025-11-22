@@ -29,23 +29,10 @@ describe("LLMService - preprocessForEmbedding", () => {
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue(`# Position & Role
-백엔드 개발자 | Backend Developer | Mid Level
-
-# Core Technologies
-Primary: NestJS, TypeScript, PostgreSQL
-Secondary: API Development
-Domains: Backend Engineering, Web Development
-
-# Technical Expertise
-This mid-level backend developer demonstrates comprehensive expertise in NestJS framework and TypeScript...
-
-# Search Keywords
-NestJS, TypeScript, PostgreSQL, Backend, 백엔드, API Development
-
-# Skill Combinations
-- NestJS + TypeScript backend development
-- PostgreSQL + TypeScript stack`),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "Backend Developer Backend Engineer Server Developer TypeScript NestJS PostgreSQL Node.js API Development 3 years Mid-level",
+            context: "Backend Developer with 3 years of experience specializing in NestJS and TypeScript for RESTful API development. Demonstrates comprehensive expertise in NestJS framework and PostgreSQL database management. Proficient in modern backend engineering practices and web development."
+          })),
         },
       };
 
@@ -73,22 +60,10 @@ NestJS, TypeScript, PostgreSQL, Backend, 백엔드, API Development
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue(`# Position & Role
-Frontend Developer | Senior Level
-
-# Core Technologies
-Primary: React, Next.js, TypeScript
-Domains: Frontend Engineering, Web Development
-
-# Technical Expertise
-This senior frontend developer demonstrates comprehensive expertise in React and Next.js...
-
-# Search Keywords
-React, ReactJS, Next.js, NextJS, TypeScript, Frontend Development
-
-# Skill Combinations
-- React + TypeScript development
-- Next.js + React full-stack`),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "Frontend Developer Frontend Engineer React Next.js NextJS TypeScript JavaScript UI UX 5 years Senior-level",
+            context: "Frontend Developer with 5 years of experience specializing in React and Next.js development. Demonstrates comprehensive expertise in modern frontend engineering with TypeScript. Proficient in building scalable web applications with React ecosystem and Next.js framework."
+          })),
         },
       };
 
@@ -123,21 +98,10 @@ React, ReactJS, Next.js, NextJS, TypeScript, Frontend Development
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue(`# Position & Role
-Full-stack Developer | 풀스택 개발자 | Mid Level
-
-# Core Technologies
-Primary: React, Next.js, NestJS, PostgreSQL, Docker, AWS
-
-# Technical Expertise
-This mid-level full-stack developer demonstrates comprehensive expertise...
-
-# Search Keywords
-Full-stack, React, Next.js, NestJS, PostgreSQL, Docker, AWS
-
-# Skill Combinations
-- React + NestJS full-stack
-- PostgreSQL + Docker infrastructure`),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "Full-stack Developer Fullstack Engineer React Next.js NestJS PostgreSQL Docker AWS DevOps Mid-level",
+            context: "Full-stack Developer with experience in both frontend and backend technologies. Demonstrates comprehensive expertise in React, Next.js for frontend and NestJS for backend development. Proficient in PostgreSQL database management, Docker containerization, and AWS cloud infrastructure."
+          })),
         },
       };
 
@@ -164,14 +128,10 @@ Full-stack, React, Next.js, NestJS, PostgreSQL, Docker, AWS
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue(`# Position & Role
-Junior Developer | Entry Level
-
-# Technical Expertise
-Entry-level developer seeking opportunities...
-
-# Search Keywords
-Junior, Entry Level, Developer`),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "Junior Developer Entry-level Software Developer",
+            context: "Entry-level developer seeking opportunities to grow and learn. Demonstrates enthusiasm for software development and willingness to acquire new technical skills."
+          })),
         },
       };
 
@@ -199,14 +159,10 @@ Junior, Entry Level, Developer`),
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue(`# Position & Role
-Senior Engineer
-
-# Technical Expertise
-Processed summary of long text...
-
-# Search Keywords
-Senior, Engineer, JavaScript, Python`),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "Senior Engineer Senior Developer JavaScript Python Multi-language",
+            context: "Senior Engineer with extensive experience across multiple programming languages. Demonstrates deep technical expertise in JavaScript and Python. Capable of handling complex technical challenges and architectural decisions."
+          })),
         },
       };
 
@@ -294,7 +250,10 @@ Senior, Engineer, JavaScript, Python`),
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue("Processed text"),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "DevOps Engineer Cloud Engineer Docker Kubernetes AWS Infrastructure",
+            context: "DevOps engineer with cloud experience specializing in containerization and orchestration. Proficient in Docker, Kubernetes, and AWS cloud platforms."
+          })),
         },
       };
 
@@ -326,7 +285,10 @@ Senior, Engineer, JavaScript, Python`),
 
       const mockResponse = {
         response: {
-          text: jest.fn().mockReturnValue("Processed data engineer profile"),
+          text: jest.fn().mockReturnValue(JSON.stringify({
+            keywords: "Data Engineer ETL Python SQL Data Pipeline",
+            context: "Data engineer with ETL experience specializing in Python and SQL. Proficient in building and maintaining data pipelines and data processing systems."
+          })),
         },
       };
 
@@ -355,7 +317,10 @@ Senior, Engineer, JavaScript, Python`),
         response: {
           text: jest
             .fn()
-            .mockReturnValue("  \n  Processed text with whitespace  \n  "),
+            .mockReturnValue(JSON.stringify({
+              keywords: "Mobile Developer Flutter React-Native",
+              context: "Mobile app developer with cross-platform expertise."
+            })),
         },
       };
 
@@ -366,9 +331,7 @@ Senior, Engineer, JavaScript, Python`),
 
       // Then
       expect(result.success).toBe(true);
-      expect(result.data?.processedSummary).toBe(
-        "Processed text with whitespace"
-      );
+      expect(result.data?.processedSummary).toContain("Mobile Developer");
       expect(result.data?.processedSummary).not.toMatch(/^\s/);
       expect(result.data?.processedSummary).not.toMatch(/\s$/);
     });

@@ -1,13 +1,13 @@
 import { db } from "@/server/db";
 import { applicants } from "@/server/db/schema/applicants.schema";
-import { eq } from "drizzle-orm";
-import { CreateApplicantData, CreateApplicantResult } from "./applicants.type";
+import { eq, sql } from "drizzle-orm";
+import { CreateApplicantData, CreateApplicantResult, SearchResultItem } from "./applicants.type";
 
 /**
  * Applicants Repository
  * 데이터베이스 접근 로직을 캡슐화
  */
-class ApplicantsRepository {
+export class ApplicantsRepository {
   /**
    * 지원자 생성
    */
@@ -55,6 +55,41 @@ class ApplicantsRepository {
       .limit(1);
 
     return applicant || null;
+  }
+
+  /**
+   * 벡터 유사도 검색
+   * pgvector의 cosine distance 연산자(<=>)를 사용하여 유사도 검색
+   * @param queryVector 검색 쿼리 벡터 (768차원)
+   * @param limit 결과 개수 제한 (기본값: 20)
+   */
+  async searchBySimilarity(
+    queryVector: number[],
+    limit: number = 20
+  ): Promise<SearchResultItem[]> {
+    const vectorString = JSON.stringify(queryVector);
+
+    // pgvector 유사도 검색 쿼리
+    // 1 - (embedding <=> query) = similarity (0~1, 높을수록 유사)
+    const results = await db.execute(sql`
+      SELECT
+        id,
+        handle,
+        position,
+        tech_stack as "techStack",
+        ai_summary as "aiSummary",
+        blob_id as "blobId",
+        seal_policy_id as "sealPolicyId",
+        access_price as "accessPrice",
+        created_at as "createdAt",
+        1 - (embedding <=> ${vectorString}::vector) as similarity
+      FROM applicants
+      WHERE is_job_seeking = true
+      ORDER BY embedding <=> ${vectorString}::vector
+      LIMIT ${limit}
+    `);
+
+    return results as unknown as SearchResultItem[];
   }
 }
 
