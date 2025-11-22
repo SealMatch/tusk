@@ -48,7 +48,7 @@ export const CandidatePrivacySection = () => {
           />
           <p className="text-lg text-zinc-50/90 pt-4">
             Your resume is secured by SUI contract-based encryption. No unwanted
-            disclosure—you grant access only to companies that show genuine
+            disclosure you grant access only to companies that show genuine
             interest.
           </p>
         </div>
