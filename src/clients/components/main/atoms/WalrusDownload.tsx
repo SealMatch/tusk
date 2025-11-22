@@ -1,168 +1,18 @@
 "use client";
 
-import useExecOnChain from "@/clients/shared/hooks/useExecOnChain";
-import { createSealClient, createSessionKey, sealDecryptFile } from "@/clients/shared/libs/seal.lib";
-import { useCurrentAccount, useSuiClient, useSignPersonalMessage } from "@mysten/dapp-kit";
-import { SessionKey } from "@mysten/seal";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { Transaction } from "@mysten/sui/transactions";
-import { walrus, WalrusClient } from "@mysten/walrus";
-import { useState, useMemo } from "react";
-import { PACKAGE_ID } from "./WalrusUpload";
-import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
-import { fromHEX } from "@mysten/sui/utils";
-
-interface FileDownloadProps {
-	/** Seal 패키지 ID */
-	packageId: string;
-	/** Module name (seal_approve 함수가 있는 모듈) */
-	moduleName: string;
-	/** Policy Object ID */
-	policyObjectId: string;
-	/** 다운로드 완료 시 호출될 콜백 */
-	onComplete?: (fileData: Uint8Array) => void;
-}
+import { useFileDownload } from "@/clients/shared/hooks/useFileDownload";
+import { useState } from "react";
 
 export function WalrusDownload() {
-	const currentAccount = useCurrentAccount();
-	const suiClient = useSuiClient() as SuiClient & { walrus: WalrusClient };
-	const { mutateAsync: signPersonalMessage } = useSignPersonalMessage();
-
-	// Seal Client 초기화
-	const sealClient = useMemo(() => createSealClient(suiClient), [suiClient]);
-
-	const client = new SuiJsonRpcClient({
-		url: getFullnodeUrl('testnet'),
-		// Setting network on your client is required for walrus to work correctly
-		network: 'testnet',
-	}).$extend(walrus({
-		wasmUrl: 'https://unpkg.com/@mysten/walrus-wasm@latest/web/walrus_wasm_bg.wasm'
-	}));
-
 	const [blobId, setBlobId] = useState("");
 	const [policyObjectId, setPolicyObjectId] = useState("");
-	const [id, setId] = useState('');
-	const [state, setState] = useState<
-		| 'empty'
-		| 'downloading'
-		| 'creating_session'
-		| 'signing'
-		| 'decrypting'
-		| 'done'
-	>('empty');
-	const [error, setError] = useState<string | null>(null);
+	const [encryptionId, setEncryptionId] = useState("");
 
-	if (!currentAccount) {
-		return <div>No account connected</div>;
-	}
-
-	async function downloadBlobFromWalrus(blobId: string): Promise<Uint8Array> {
-		setState('downloading');
-		const walrusBlob = await client.walrus.getBlob({ blobId });
-		if (!walrusBlob) {
-			throw new Error("Blob not found in Walrus");
-		}
-		const blobBytes = await walrusBlob.asFile().bytes();
-		console.log("Downloaded encrypted blob, size:", blobBytes.length);
-		return blobBytes;
-	}
-
-	async function createAndSignSessionKey(address: string): Promise<SessionKey> {
-		setState('creating_session');
-		const sessionKey = await createSessionKey(
-			suiClient,
-			address,
-			PACKAGE_ID,
-			10 // 10 minute TTL
-		);
-
-		setState('signing');
-		const personalMessage = sessionKey.getPersonalMessage();
-		const { signature } = await signPersonalMessage({
-			message: personalMessage
-		});
-		sessionKey.setPersonalMessageSignature(signature);
-
-		return sessionKey;
-	}
-
-	async function decryptBlob(
-		encryptedData: Uint8Array,
-		sessionKey: SessionKey,
-		policyObjectId: string,
-		encryptionId: string
-	): Promise<Uint8Array> {
-		// Build seal_approve transaction
-		const tx = new Transaction();
-		tx.moveCall({
-			target: `${PACKAGE_ID}::access_policy::seal_approve`,
-			arguments: [
-				tx.pure.vector("u8", fromHEX(encryptionId)),
-				tx.object(policyObjectId)
-			],
-		});
-
-		const txBytes = await tx.build({
-			client: suiClient,
-			onlyTransactionKind: true
-		});
-
-		// Decrypt the data
-		setState('decrypting');
-		const decryptedData = await sealDecryptFile(
-			sealClient,
-			encryptedData,
-			sessionKey,
-			txBytes
-		);
-
-		return decryptedData;
-	}
-
-	async function handleDownload() {
-		if (!currentAccount) {
-			setError("No account connected");
-			return;
-		}
-
-		if (!blobId || !policyObjectId || !id) {
-			setError("Blob ID, Policy Object ID, and ID are all required");
-			return;
-		}
-
-		try {
-			setError(null);
-
-			// Download encrypted blob from Walrus
-			const encryptedData = await downloadBlobFromWalrus(blobId);
-
-			// Create and sign session key
-			const sessionKey = await createAndSignSessionKey(currentAccount.address);
-
-			// Decrypt the blob
-			const decryptedData = await decryptBlob(encryptedData, sessionKey, policyObjectId, id);
-
-			setState('done');
-
-			// Download the decrypted file
-			downloadFile(decryptedData);
-
-		} catch (err) {
-			console.error('Download/decrypt failed:', err);
-			setError(err instanceof Error ? err.message : String(err));
-			setState('empty');
-		}
-	}
-
-	function downloadFile(data: Uint8Array) {
-		const blob = new Blob([data as BlobPart]);
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'decrypted-file';
-		a.click();
-		URL.revokeObjectURL(url);
-	}
+	const { error, state, handleDownload } = useFileDownload({
+		blobId,
+		policyObjectId,
+		encryptionId
+	});
 
 	return (
 		<div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -201,15 +51,15 @@ export function WalrusDownload() {
 					/>
 				</div>
 
-				{/* ID Input Section */}
+				{/* Encryption ID Input Section */}
 				<div>
 					<label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-						ID
+						Encryption ID
 					</label>
 					<input
 						type="text"
-						value={id}
-						onChange={(e) => setId(e.target.value)}
+						value={encryptionId}
+						onChange={(e) => setEncryptionId(e.target.value)}
 						disabled={state !== 'empty'}
 						placeholder="0x..."
 						className="block w-full text-sm text-gray-900 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-3"
@@ -219,7 +69,7 @@ export function WalrusDownload() {
 				{/* Download Button */}
 				<button
 					onClick={handleDownload}
-					disabled={state !== 'empty' || !blobId || !policyObjectId}
+					disabled={state !== 'empty' || !blobId || !policyObjectId || !encryptionId}
 					className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors duration-200"
 				>
 					{state === 'empty' ? 'Download & Decrypt' : 'Processing...'}
