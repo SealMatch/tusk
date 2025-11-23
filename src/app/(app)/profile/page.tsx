@@ -1,6 +1,7 @@
 "use client";
 
 import { useApproveAccessProfilePage } from "@/clients/shared/hooks/useApproveAccessProfilePage";
+import { useFileDownload } from "@/clients/shared/hooks/useFileDownload";
 import { useProfilePageData } from "@/clients/shared/hooks/useProfilePageData";
 import { useRejectAccessProfilePage } from "@/clients/shared/hooks/useRejectAccessProfilePage";
 import { cn } from "@/clients/shared/libs";
@@ -17,6 +18,7 @@ import {
   Clock,
   Code2,
   Copy,
+  Download,
   Inbox,
   Send,
   User,
@@ -34,6 +36,7 @@ export default function ProfilePage() {
   );
   const { handleApproveAccess } = useApproveAccessProfilePage();
   const { handleRejectAccess } = useRejectAccessProfilePage();
+  const { error: fileDownloadError, state, handleDownload, isDownloading } = useFileDownload();
 
   const { data, isLoading, error } = useProfilePageData(
     currentAccount?.address ?? ""
@@ -92,7 +95,7 @@ export default function ProfilePage() {
         applicantId: currentApplicant.id,
       });
 
-      // 캐시 무효화 → 자동 refetch
+      // Invalidate cache → auto refetch
       await queryClient.invalidateQueries({
         queryKey: ["profile-page-data", currentAccount?.address],
       });
@@ -125,13 +128,28 @@ export default function ProfilePage() {
         applicantId: currentApplicant.id,
       });
 
-      // 캐시 무효화 → 자동 refetch
+      // Invalidate cache → auto refetch
       await queryClient.invalidateQueries({
         queryKey: ["profile-page-data", currentAccount?.address],
       });
     } catch (error) {
       console.error("Failed to reject access:", error);
     }
+  };
+
+  const onDownload = async (request: RequestedItem) => {
+    const { applicant } = request;
+
+    if (!applicant.blobId || !applicant.sealPolicyId || !applicant.encryptionId) {
+      console.error("Missing required data for download");
+      return;
+    }
+
+    await handleDownload({
+      blobId: applicant.blobId,
+      policyObjectId: applicant.sealPolicyId,
+      encryptionId: applicant.encryptionId,
+    });
   };
 
   if (!currentAccount) {
@@ -248,7 +266,7 @@ export default function ProfilePage() {
               )}
             >
               <Send className="w-4 h-4 mr-2" />
-              열람 신청한 리스트
+              Requested Access List
             </Button>
             <Button
               variant="ghost"
@@ -261,7 +279,7 @@ export default function ProfilePage() {
               )}
             >
               <Inbox className="w-4 h-4 mr-2" />
-              열람 신청을 받은 리스트
+              Received Access List
             </Button>
           </div>
 
@@ -365,7 +383,7 @@ export default function ProfilePage() {
                           <div className="flex items-center gap-2">
                             <Clock className="h-3.5 w-3.5 text-gray-500" />
                             <p className="text-xs text-gray-500">
-                              {new Date(request.match.createdAt).toLocaleString()}
+                              {new Date(request.match.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }).replace('오전', 'AM').replace('오후', 'PM')}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
@@ -377,6 +395,29 @@ export default function ProfilePage() {
                             >
                               {request.match.status}
                             </Badge>
+                            {request.match.status === "approved" && (
+                              <Button
+                                size="sm"
+                                className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 transition-all hover:shadow-lg hover:shadow-cyan-500/20"
+                                onClick={() => onDownload(request)}
+                                disabled={isDownloading}
+                              >
+                                <Download className="w-4 h-4 mr-1" />
+                                {isDownloading
+                                  ? state === 'downloading'
+                                    ? 'Downloading...'
+                                    : state === 'creating_session'
+                                      ? 'Creating Session...'
+                                      : state === 'signing'
+                                        ? 'Signing...'
+                                        : state === 'decrypting'
+                                          ? 'Decrypting...'
+                                          : state === 'done'
+                                            ? 'Done!'
+                                            : 'Download'
+                                  : 'Download'}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -413,7 +454,7 @@ export default function ProfilePage() {
                           <div className="flex items-center gap-2">
                             <Clock className="h-3.5 w-3.5 text-gray-500" />
                             <p className="text-xs text-gray-500">
-                              {new Date(request.match.createdAt).toLocaleString()}
+                              {new Date(request.match.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }).replace('오전', 'AM').replace('오후', 'PM')}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
@@ -435,7 +476,7 @@ export default function ProfilePage() {
                                   onClick={() => onApprove(request)}
                                 >
                                   <CheckCircle2 className="w-4 h-4 mr-1" />
-                                  승인
+                                  Approve
                                 </Button>
                                 <Button
                                   size="sm"
@@ -443,7 +484,7 @@ export default function ProfilePage() {
                                   onClick={() => onReject(request)}
                                 >
                                   <XCircle className="w-4 h-4 mr-1" />
-                                  거절
+                                  Reject
                                 </Button>
                               </div>
                             )}
@@ -461,3 +502,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

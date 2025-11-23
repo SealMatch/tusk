@@ -42,12 +42,7 @@ function SearchResultsPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
-  const {
-    searchResultList,
-    setSearchResultList,
-    setSelectedApplicant,
-    setSelectedApplicantMatchInfo,
-  } = useSearchResultStore();
+  const { setSearchResultList, setSelectedApplicant } = useSearchResultStore();
   const historyId = searchParams.get("historyId");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,9 +70,13 @@ function SearchResultsPageContent() {
 
   useEffect(() => {
     if (searchResultCards) {
-      setSearchResultList(searchResultCards);
+      // 로그인한 지갑 주소의 사용자 제외
+      const filteredResults = searchResultCards.filter(
+        (card) => card.applicant.walletAddress !== recruiterWalletAddress
+      );
+      setSearchResultList(filteredResults);
     }
-  }, [searchResultCards, setSearchResultList]);
+  }, [searchResultCards, setSearchResultList, recruiterWalletAddress]);
 
   const handleCardClick = (applicant: SearchResultItem) => {
     if (!applicant.blobId) return;
