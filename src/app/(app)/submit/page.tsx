@@ -15,6 +15,9 @@ import {
   Loader2,
   Sparkles,
   Upload,
+  User,
+  FileUp,
+  ArrowRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -265,27 +268,44 @@ export default function SubmitPage() {
   const uploadStateInfo = getUploadStateInfo(state);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-4 sm:p-8">
-      <div className="mx-auto max-w-4xl">
-        <div>
-          <h1 className="mb-2 text-4xl font-bold tracking-tight text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-4 sm:p-8 relative overflow-x-hidden">
+      {/* Background Effects */}
+      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div className="relative mx-auto max-w-5xl">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6">
+            <Sparkles className="w-4 h-4 text-purple-400" />
+            <span className="text-sm text-purple-300 font-medium">Join Our Talent Network</span>
+          </div>
+          <h1 className="mb-4 text-5xl sm:text-6xl font-bold tracking-tight bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
             Start as a job seeker!
           </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+            Upload your resume, create your profile, and get discovered by top recruiters worldwide.
+          </p>
           <div className="mb-8 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
 
-          {/* Form Container */}
-          <div className="overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl">
+        </div>
+
+        {/* Enhanced Form Container */}
+        <div className="space-y-8">
+          <div className="overflow-hidden rounded-2xl border border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl">
             <div className="p-6 sm:p-8">
-              <h2 className="mb-6 text-2xl font-semibold text-white">
-                Register Form
-              </h2>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400">
+                  <FileUp className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">1. Resume PDF</h3>
+                  <p className="text-sm text-gray-400">Upload your resume for AI analysis</p>
+                </div>
+              </div>
 
               <div className="space-y-6">
-                {/* 1. PDF 파일 업로드 */}
+                {/* Enhanced File Upload Section */}
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    1. Resume PDF
-                  </label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -489,60 +509,84 @@ export default function SubmitPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
 
-                {/* 2. 본인 핸들 */}
+          {/* Handle Section Card */}
+          <div className="overflow-hidden rounded-2xl border border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400">
+                  <User className="w-6 h-6" />
+                </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <label className="text-sm font-medium text-white">
-                      2. Your Handle
-                    </label>
-                    {handleCheckStatus === "checking" && (
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Checking...</span>
-                      </div>
-                    )}
-                    {handleCheckStatus === "duplicate" && (
-                      <div className="flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded-md border border-red-500/20">
-                        <span>⚠️ Handle is already in use</span>
-                      </div>
-                    )}
-                    {handleCheckStatus === "available" && (
-                      <div className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>Handle is available</span>
-                      </div>
-                    )}
-                  </div>
+                  <h3 className="text-xl font-semibold text-white">2. Your Handle</h3>
+                  <p className="text-sm text-gray-400">Create your unique identifier</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="relative">
                   <input
                     type="text"
                     value={handle ? `@${handle}` : ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // @ 제거하고 저장
                       const withoutAt = value.replace(/^@+/, "");
                       setHandle(withoutAt);
                     }}
-                    className="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                    className="w-full px-4 py-4 bg-black/30 border border-gray-600/50 hover:border-purple-500/50 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl text-white placeholder-gray-400 transition-all duration-300 text-lg"
                     placeholder="@Enter your handle"
                   />
                 </div>
 
-                {/* 3. AI 요약 정보 */}
+                {/* Handle Status Messages */}
+                {handleCheckStatus === "checking" && (
+                  <div className="flex items-center gap-2 text-sm text-purple-300">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Checking availability...</span>
+                  </div>
+                )}
+                {handleCheckStatus === "available" && (
+                  <div className="flex items-center gap-2 text-sm text-green-400">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Handle is available!</span>
+                  </div>
+                )}
+                {handleCheckStatus === "duplicate" && (
+                  <div className="flex items-center gap-2 text-sm text-red-400">
+                    <span>⚠️ Handle is already taken</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* AI Summary Section Card */}
+          <div className="overflow-hidden rounded-2xl border border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400">
+                  <Sparkles className="w-6 h-6" />
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    3. AI Summary
-                  </label>
-                  <div className="p-4 rounded-lg bg-black/40 border border-purple-500/30">
-                    {!analyzingResult ? (
-                      <div className="flex items-center gap-3 text-gray-400 py-2">
-                        <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
-                        <p className="text-sm">
-                        When you upload a PDF, AI analyzes it and automatically generates the job role, tech stack, and summary.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <h3 className="text-xl font-semibold text-white">3. AI Summary</h3>
+                  <p className="text-sm text-gray-400">Your extracted profile information</p>
+                </div>
+              </div>
+
+              {/* AI Summary Content */}
+              {!analyzingResult ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700/50 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-400 text-lg mb-2">Waiting for AI Analysis</p>
+                  <p className="text-sm text-gray-500">Upload a PDF to see your extracted profile information</p>
+                </div>
+              ) : (
+                <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
                         {/* Position */}
                         <div className="flex items-start gap-4 group">
                           <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
@@ -594,43 +638,52 @@ export default function SubmitPage() {
                             </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
+              )}
+            </div>
+          </div>
 
-                {/* Supply 버튼 */}
-                <div className="flex justify-end pt-4">
-                  <Button
-                    onClick={handleSupplyClick}
-                    disabled={
-                      isSubmitting ||
-                      state !== "done" ||
-                      !uploadResult ||
-                      !analyzingResult ||
-                      !handle.trim() ||
-                      handleCheckStatus !== "available" ||
-                      !currentAccount?.address
-                    }
-                    className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
-                      isSubmitting ||
-                      state !== "done" ||
-                      !uploadResult ||
-                      !analyzingResult ||
-                      !handle.trim() ||
-                      handleCheckStatus !== "available" ||
-                      !currentAccount?.address
-                        ? "bg-gray-600 cursor-not-allowed opacity-50"
-                        : "bg-blue-600 hover:bg-blue-700"
-                    } text-white`}
-                  >
-                    {isSubmitting && (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    )}
-                    {isSubmitting ? "Submitting..." : "Register"}
-                  </Button>
-                </div>
-              </div>
+          {/* Enhanced Submit Section */}
+          <div className="text-center space-y-6">
+            <div className="max-w-md mx-auto">
+              <Button
+                onClick={handleSupplyClick}
+                disabled={
+                  isSubmitting ||
+                  state !== "done" ||
+                  !uploadResult ||
+                  !analyzingResult ||
+                  !handle.trim() ||
+                  handleCheckStatus !== "available" ||
+                  !currentAccount?.address
+                }
+                className={`
+                  w-full px-8 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-all duration-300 transform
+                  ${isSubmitting ||
+                    state !== "done" ||
+                    !uploadResult ||
+                    !analyzingResult ||
+                    !handle.trim() ||
+                    handleCheckStatus !== "available" ||
+                    !currentAccount?.address
+                      ? "bg-gray-700/50 cursor-not-allowed opacity-50 scale-95"
+                      : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/40 scale-100 hover:scale-105"
+                  } text-white
+                `}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-6 h-6" />
+                    <span>Complete Registration</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
