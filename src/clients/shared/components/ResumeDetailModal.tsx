@@ -6,6 +6,7 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Code2, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useFileDownload } from "../hooks/useFileDownload";
 
 interface ResumeDetailModalProps {
   isOpen: boolean;
@@ -31,6 +32,9 @@ export function ResumeDetailModal({
     searchResultList,
     setSearchResultList,
   } = useSearchResultStore();
+
+  const policyObjectId = selectedApplicant?.sealPolicyId ?? "";
+  const encryptionId = selectedApplicant?.encryptionId ?? "";
 
   useEffect(() => {
     if (!selectedApplicant && isOpen) {
@@ -103,11 +107,14 @@ export function ResumeDetailModal({
     }
   };
 
-  const { downloadStatus, isDownloading, handleDownload } = usePdfDownload({
-    blobId,
-    sealPolicyId: selectedApplicant?.sealPolicyId || "",
-    currentAccountAddress: companyAddress || "",
-  });
+  // const { downloadStatus, isDownloading, handleDownload } = usePdfDownload({
+  //   blobId,
+  //   sealPolicyId: selectedApplicant?.sealPolicyId || "",
+  //   currentAccountAddress: companyAddress || "",
+  // });
+
+  const { error, state, handleDownload, isDownloading } = useFileDownload();
+
 
   // const { data: onChainStatus } = useViewRequestStatus({
   //   recruiterAddress: companyAddress,
@@ -179,10 +186,10 @@ export function ResumeDetailModal({
                         {tech}
                       </span>
                     )) || (
-                      <span className="text-gray-500 text-sm">
-                        기술 스택 정보 없음
-                      </span>
-                    )}
+                        <span className="text-gray-500 text-sm">
+                          기술 스택 정보 없음
+                        </span>
+                      )}
                   </div>
                 </div>
               </div>
@@ -207,13 +214,21 @@ export function ResumeDetailModal({
             <div className="mt-8 pt-6 border-t border-gray-700">
               {match?.status === "approved" ? (
                 <button
-                  onClick={handleDownload}
+                  onClick={() => handleDownload({ blobId, policyObjectId, encryptionId })}
                   disabled={isDownloading}
                   className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isDownloading
-                    ? "다운로드 중..."
-                    : downloadStatus || "이력서 다운로드"}
+                  {state === "downloading"
+                    ? "파일 다운로드 중..."
+                    : state === "creating_session"
+                      ? "세션 생성 중..."
+                      : state === "signing"
+                        ? "서명 중..."
+                        : state === "decrypting"
+                          ? "복호화 중..."
+                          : state === "done"
+                            ? "다운로드 완료!"
+                            : "이력서 다운로드"}
                 </button>
               ) : match?.status === "pending" ? (
                 <button
