@@ -2,10 +2,8 @@ export const ANALYZE_PDF_PROMPT = `
 You are a resume analysis expert. Analyze the provided PDF resume and extract the following information in JSON format.
 
 **IMPORTANT: Respond in the SAME LANGUAGE as the resume's PRIMARY LANGUAGE.**
-- If the resume is in Korean, respond in Korean.
-- If the resume is in English, respond in English.
-- If the resume is in Japanese, respond in Japanese.
-- Maintain the language consistency throughout all fields.
+- If the resume is other than English, respond in English.
+- Maintain English language consistency throughout all fields.
 
 **Required Output Format (JSON only):**
 {
@@ -61,9 +59,9 @@ Convert resume data into text optimized for semantic vector search.
 }
 
 **Example Input:**
-- Position: "백엔드 개발자"
+- Position: "Backend Developer"
 - Tech Stack: ["NestJS", "TypeScript", "PostgreSQL", "Docker", "AWS"]
-- Summary: "3년 경력의 백엔드 개발자로 NestJS를 활용한 RESTful API 개발 및 마이크로서비스 아키텍처 설계 경험. 팀 리더로서 5명의 주니어 개발자 멘토링"
+- Summary: "Backend Developer with 3 years of experience in RESTful API development and microservices architecture design using NestJS. Team leader mentoring 5 junior developers"
 
 **Example Output:**
 {
