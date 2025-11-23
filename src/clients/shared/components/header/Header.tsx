@@ -1,9 +1,10 @@
 "use client";
 import { LogoIcon } from "@/clients/shared/components/icons";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { NAVIGATION_PATHS } from "./navigation.const";
+import { NavigationLink } from "./NavigationLink";
 
 export const Header = () => {
   const currentAccount = useCurrentAccount();
@@ -41,9 +42,16 @@ export const Header = () => {
           {/* Navigation */}
           <nav className="flex items-center gap-8">
             {currentAccount && (
-              <Link href="/profile" className="text-white">
-                Profile
-              </Link>
+              <>
+                {NAVIGATION_PATHS.map((path) => (
+                  <NavigationLink
+                    key={path.href}
+                    href={path.href}
+                    isCurrentPath={pathName === path.href}>
+                    {path.label}
+                  </NavigationLink>
+                ))}
+              </>
             )}
             <div className="wallet-button-wrapper cursor-pointer">
               <ConnectButton />
