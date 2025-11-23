@@ -6,6 +6,7 @@ interface CreateApplicantParams {
     position: string;
     techStack: string[];
     aiSummary: string;
+    introduction?: string;
     blobId?: string;
     capId?: string;
     sealPolicyId?: string;
