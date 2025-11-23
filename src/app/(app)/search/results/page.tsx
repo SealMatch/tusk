@@ -5,7 +5,7 @@ import { customAxios } from "@/clients/shared/libs/axios.libs";
 import { useSearchResultStore } from "@/clients/shared/stores";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -47,7 +47,6 @@ function SearchResultsPageContent() {
     setSelectedApplicant,
     setSelectedApplicantMatchInfo,
   } = useSearchResultStore();
-  const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBlobId, setSelectedBlobId] = useState("");
@@ -76,12 +75,16 @@ function SearchResultsPageContent() {
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
   });
 
-  // 검색 성공 시 이력 목록 갱신
+  // 검색 성공 시 이력 목록 갱신 (로그인한 사용자 제외)
   useEffect(() => {
     if (searchResultCards) {
-      setSearchResultList(searchResultCards);
+      // 로그인한 지갑 주소의 사용자 제외
+      const filteredResults = searchResultCards.filter(
+        (card) => card.applicant.walletAddress !== recruiterWalletAddress
+      );
+      setSearchResultList(filteredResults);
     }
-  }, [searchResultCards, setSearchResultList]);
+  }, [searchResultCards, setSearchResultList, recruiterWalletAddress]);
 
   const handleCardClick = (selectedResult: SearchResultCard) => {
     if (!selectedResult) return;
