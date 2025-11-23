@@ -9,4 +9,3 @@ export { formatAddress } from "./wallet.utils";
 //   process.env.VERCEL_ENV === "development"
 //     ? process.env.NEXT_PUBLIC_TEST_WALLET_ADDRESS
 //     : "";
-ㄴ;
