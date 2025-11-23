@@ -39,6 +39,26 @@ export const addRecruiterTx = (
   return tx;
 };
 
+export const removeRecruiterTx = (
+  policyId: string,
+  adminCapId: string,
+  recruiterAddress: string,
+) => {
+  const tx = new Transaction();
+
+  tx.object(policyId);
+  tx.moveCall({
+    target: `${PACKAGE_ID}::access_policy::remove_recruiter`,
+    arguments: [
+      tx.object(policyId),
+      tx.object(adminCapId),
+      tx.pure.address(recruiterAddress),
+    ],
+  });
+
+  return tx;
+}
+
 export const sealApproveTx = (policyObjectId: string, encryptionId: string) => {
   const tx = new Transaction();
   tx.moveCall({
