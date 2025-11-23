@@ -2,8 +2,7 @@
 
 import { ResumeDetailModal, SkillBadge } from "@/clients/shared/components";
 import { customAxios } from "@/clients/shared/libs/axios.libs";
-import { useSelectedApplicantStore } from "@/clients/shared/stores";
-import { SearchResultItem } from "@/server/domains/applicants/applicants.type";
+import { useSearchResultStore } from "@/clients/shared/stores";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,6 +41,12 @@ function SearchResultsPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
+  const {
+    searchResultList,
+    setSearchResultList,
+    setSelectedApplicant,
+    setSelectedApplicantMatchInfo,
+  } = useSearchResultStore();
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +56,6 @@ function SearchResultsPageContent() {
     data: searchResultCards,
     isLoading,
     error,
-    isSuccess,
   } = useQuery({
     queryKey: ["selected-history-results", query, recruiterWalletAddress],
     queryFn: async () => {
@@ -64,7 +68,9 @@ function SearchResultsPageContent() {
           "X-Wallet-Address": recruiterWalletAddress,
         },
       });
-      return response.data.data.results as SearchResultCard[];
+      const searchResultCards = response.data.data
+        .results as SearchResultCard[];
+      return searchResultCards;
     },
     enabled: !!query,
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
@@ -72,20 +78,21 @@ function SearchResultsPageContent() {
 
   // 검색 성공 시 이력 목록 갱신
   useEffect(() => {
-    if (isSuccess && recruiterWalletAddress) {
-      queryClient.invalidateQueries({
-        queryKey: ["search-history", recruiterWalletAddress],
-      });
+    if (searchResultCards) {
+      setSearchResultList(searchResultCards);
     }
-  }, [isSuccess, recruiterWalletAddress, queryClient]);
+  }, [searchResultCards, setSearchResultList]);
 
-  const { setSelectedApplicant } = useSelectedApplicantStore();
+  const handleCardClick = (selectedResult: SearchResultCard) => {
+    if (!selectedResult) return;
 
-  const handleCardClick = (applicant: SearchResultItem) => {
+    const { applicant, match } = selectedResult;
     if (!applicant.blobId) return;
+
     setSelectedApplicant(applicant);
     setSelectedBlobId(applicant.blobId);
     setIsModalOpen(true);
+    setSelectedApplicantMatchInfo(match);
   };
 
   // 검색 키워드와 매칭되는 스킬을 앞으로 정렬
@@ -118,9 +125,9 @@ function SearchResultsPageContent() {
   };
 
   // 중복 제거 + similarity 기준 정렬
-  const sortedResults = searchResultCards
+  const sortedResults = searchResultList
     ? Object.values(
-        searchResultCards.reduce((acc, item) => {
+        searchResultList.reduce((acc, item) => {
           const blobId = item.applicant.blobId || item.applicant.id;
           // blobId가 없거나, 기존 항목보다 similarity가 높으면 업데이트
           if (!acc[blobId] || acc[blobId].similarity < item.similarity) {
@@ -162,7 +169,7 @@ function SearchResultsPageContent() {
         {sortedResults.map((result) => (
           <button
             key={result.applicant.id}
-            onClick={() => handleCardClick({ ...result.applicant, similarity: result.similarity })}
+            onClick={() => handleCardClick(result)}
             disabled={!result.applicant.blobId}
             className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -234,11 +241,13 @@ function SearchResultsPageContent() {
 
 export default function SearchResultsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400">로딩 중...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-gray-400">로딩 중...</div>
+        </div>
+      }
+    >
       <SearchResultsPageContent />
     </Suspense>
   );

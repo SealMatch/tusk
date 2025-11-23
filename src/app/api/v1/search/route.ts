@@ -1,5 +1,5 @@
 import { applicantsService } from "@/server/domains/applicants/applicants.service";
-import { SearchApplicantsResult, PublicApplicant } from "@/server/domains/applicants/applicants.type";
+import { PublicApplicant } from "@/server/domains/applicants/applicants.type";
 import { historyService } from "@/server/domains/histories/history.service";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { Result } from "@/server/shared/types/result.type";
@@ -80,7 +80,9 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(
   request: NextRequest
-): Promise<NextResponse<Result<{ results: SearchResultCard[]; total: number }>>> {
+): Promise<
+  NextResponse<Result<{ results: SearchResultCard[]; total: number }>>
+> {
   try {
     // 1. Extract query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -129,14 +131,15 @@ export async function GET(
     }
 
     // 4. Save search history (async, non-blocking) & Enrich results
-    const recruiterWalletAddress = request.headers.get("x-wallet-address") || "";
+    const recruiterWalletAddress =
+      request.headers.get("x-wallet-address") || "";
 
     // Map search results to SearchResultItem format (for history service)
     const searchResultItems = result.data!.results.map((r) => {
       const { similarity, ...snapshot } = r;
       return {
         applicantId: r.id,
-        similarity: r.similarity,
+        similarity: similarity,
         createdAt: r.createdAt,
         snapshot: snapshot as unknown as PublicApplicant, // Explicit cast to avoid type issues
       };

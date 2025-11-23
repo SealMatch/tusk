@@ -239,12 +239,27 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          errorMessage: "recruiterWalletAddress, applicantId, and viewRequestId are required",
+          errorMessage:
+            "recruiterWalletAddress, applicantId, and viewRequestId are required",
         },
         { status: 400 }
       );
     }
 
+    const existingMatch = await matchService.findExistingMatch(
+      recruiterWalletAddress,
+      applicantId
+    );
+
+    if (existingMatch) {
+      return NextResponse.json(
+        {
+          success: false,
+          errorMessage: "Match already exists",
+        },
+        { status: 409 }
+      );
+    }
     // 3. Create match
     const result = await matchService.createMatch({
       recruiterWalletAddress,
@@ -253,19 +268,12 @@ export async function POST(
     });
 
     if (!result.success) {
-      // Determine appropriate status code
-      const status = result.errorMessage?.includes("already exists")
-        ? 409
-        : result.errorMessage?.includes("not found")
-          ? 404
-          : 500;
-
       return NextResponse.json(
         {
           success: false,
           errorMessage: result.errorMessage,
         },
-        { status }
+        { status: 500 }
       );
     }
 
