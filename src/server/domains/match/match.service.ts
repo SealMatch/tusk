@@ -296,36 +296,14 @@ class MatchService {
       });
 
       // 5. receivedList 구성 (applicant가 받은 매치)
-      const recruiterWalletAddresses = receivedMatches.map(
-        (m) => m.recruiterWalletAddress
-      );
-      const recruiterApplicants =
-        await this.applicantsRepository.findByWalletAddresses(
-          recruiterWalletAddresses
-        );
-
-      const receivedList = receivedMatches
-        .map((match) => {
-          const recruiterApplicant = recruiterApplicants.find(
-            (a) => a.walletAddress === match.recruiterWalletAddress
-          );
-
-          if (!recruiterApplicant) {
-            console.warn(
-              `⚠️ Recruiter applicant not found for wallet: ${match.recruiterWalletAddress}`
-            );
-            return null;
-          }
-
-          return {
-            match,
-            applicant: recruiterApplicant,
-          };
-        })
-        .filter(
-          (item): item is { match: Match; applicant: Applicant } =>
-            item !== null
-        );
+      // receivedList는 나(applicant)에게 요청을 보낸 recruiter들의 정보를 포함
+      // recruiter는 applicant profile이 없을 수 있으므로, recruiter의 walletAddress만 포함
+      const receivedList = receivedMatches.map((match) => {
+        return {
+          match,
+          recruiterWalletAddress: match.recruiterWalletAddress,
+        };
+      });
 
       console.log("✅ Profile page data fetched:", {
         requestedCount: requestedList.length,
@@ -336,6 +314,7 @@ class MatchService {
         success: true,
         data: {
           userHandle: applicant?.handle ?? "",
+          currentApplicant: applicant ?? null,
           requestedList,
           receivedList,
         },
