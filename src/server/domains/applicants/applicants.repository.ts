@@ -1,7 +1,11 @@
 import { db } from "@/server/db";
-import { applicants } from "@/server/db/schema/applicants.schema";
+import { Applicant, applicants } from "@/server/db/schema/applicants.schema";
 import { eq, inArray, sql } from "drizzle-orm";
-import { CreateApplicantData, CreateApplicantResult, SearchResultItem } from "./applicants.type";
+import {
+  CreateApplicantData,
+  CreateApplicantResult,
+  SearchResultItem,
+} from "./applicants.type";
 
 /**
  * Applicants Repository
@@ -49,7 +53,7 @@ export class ApplicantsRepository {
   /**
    * ID로 지원자 조회
    */
-  async findById(id: string) {
+  async findById(id: string): Promise<Applicant | null> {
     const [applicant] = await db
       .select()
       .from(applicants)

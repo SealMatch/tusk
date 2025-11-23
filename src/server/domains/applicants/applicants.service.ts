@@ -159,7 +159,10 @@ class ApplicantsService {
       }
 
       const queryVector = embeddingResult.data!.embedding;
-      console.log("✅ Query embedding created. Dimensions:", queryVector.length);
+      console.log(
+        "✅ Query embedding created. Dimensions:",
+        queryVector.length
+      );
 
       // 2. pgvector로 유사도 검색
       console.log("🔄 Searching by vector similarity...");

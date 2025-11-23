@@ -1,5 +1,3 @@
-import { applicants } from "@/server/db/schema/applicants.schema";
-
 /**
  * 지원자 생성 요청 파라미터
  */
