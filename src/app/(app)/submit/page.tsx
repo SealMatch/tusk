@@ -44,26 +44,26 @@ export default function SubmitPage() {
   ) => {
     handleFileChange(event);
 
-    // 파일 선택 시 자동으로 업로드 + PDF 분석 병렬 실행
+    // Auto upload + PDF analysis in parallel when file is selected
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      // 병렬 실행
+      // Run in parallel
       const results = await Promise.allSettled([
-        handleSubmit(selectedFile), // Walrus/Sui/Seal 업로드 (파일 직접 전달)
-        analyzePdf(selectedFile), // PDF AI 분석
+        handleSubmit(selectedFile), // Walrus/Sui/Seal upload (direct file transfer)
+        analyzePdf(selectedFile), // PDF AI analysis
       ]);
 
       const [uploadResultPromise, summaryResultPromise] = results;
 
-      // PDF 분석 성공 시 결과 저장
+      // Save results when PDF analysis succeeds
       if (summaryResultPromise.status === "fulfilled") {
         setAnalyzingResult(summaryResultPromise.value);
       } else {
         setAnalyzingError(
-          "PDF 분석 실패: " +
+          "PDF analysis failed: " +
             (summaryResultPromise.reason instanceof Error
               ? summaryResultPromise.reason.message
-              : "알 수 없는 오류")
+              : "Unknown error")
         );
       }
     }
@@ -84,7 +84,7 @@ export default function SubmitPage() {
       const response = await fetch(`/api/v1/handle-check?handle=${handle}`);
       const result = await response.json();
 
-      // data: true = 중복, data: false = 사용 가능
+      // data: true = duplicate, data: false = available
       if (result.success && !result.data) {
         setHandleCheckStatus("available");
       } else {
@@ -95,7 +95,7 @@ export default function SubmitPage() {
     }
   };
 
-  // 1초 debounce로 자동 중복 체크
+  // Auto duplicate check with 1 second debounce
   useEffect(() => {
     if (!handle.trim()) {
       setHandleCheckStatus("idle");
@@ -109,12 +109,12 @@ export default function SubmitPage() {
     return () => clearTimeout(timer);
   }, [handle]);
 
-  // 제출 성공 시 메인 페이지로 이동
+  // Navigate to main page on successful submission
   useEffect(() => {
     if (submitSuccess) {
       const timer = setTimeout(() => {
         router.push("/");
-      }, 3000); // 3초 후 이동
+      }, 2000); // Move after 2 seconds
 
       return () => clearTimeout(timer);
     }
@@ -128,7 +128,7 @@ export default function SubmitPage() {
     aiSummary: string;
   } | null>(null);
 
-  // PDF 분석 함수 (분리)
+  // PDF analysis function (separated)
   const analyzePdf = async (
     pdfFile: File
   ): Promise<{
@@ -150,7 +150,7 @@ export default function SubmitPage() {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.errorMessage || "PDF 분석에 실패했습니다.");
+        throw new Error(result.errorMessage || "PDF analysis failed.");
       }
 
       return result.data;
@@ -158,7 +158,7 @@ export default function SubmitPage() {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "PDF 분석 중 오류가 발생했습니다.";
+          : "An error occurred during PDF analysis.";
       setAnalyzingError(errorMessage);
       throw error;
     } finally {
@@ -166,63 +166,63 @@ export default function SubmitPage() {
     }
   };
 
-  // 사용자 친화적 에러 메시지 변환
+  // Convert to user-friendly error messages
   const getFriendlyErrorMessage = (errorMessage: string): string => {
-    // 파일 업로드 관련 에러
+    // File upload related errors
     if (errorMessage.includes("File size must be less than")) {
-      return "파일 크기가 10MB를 초과했습니다. 더 작은 파일을 선택해주세요.";
+      return "File size exceeds 10MB. Please select a smaller file.";
     }
     if (errorMessage.includes("No file selected")) {
-      return "파일을 선택해주세요.";
+      return "Please select a file.";
     }
     if (errorMessage.includes("WAL 토큰이 부족합니다")) {
-      return "WAL 토큰이 부족합니다. 지갑에 WAL 토큰을 충전해주세요.";
+      return "Insufficient WAL tokens. Please add WAL tokens to your wallet.";
     }
     if (errorMessage.includes("접근 정책 생성 실패")) {
-      return "파일 접근 정책 생성에 실패했습니다. 다시 시도해주세요.";
+      return "Failed to create file access policy. Please try again.";
     }
     if (errorMessage.includes("파일 암호화 실패")) {
-      return "파일 암호화에 실패했습니다. 다시 시도해주세요.";
+      return "File encryption failed. Please try again.";
     }
     if (errorMessage.includes("Walrus 업로드 실패")) {
-      return "파일 저장소 업로드에 실패했습니다. 네트워크 연결을 확인하고 다시 시도해주세요.";
+      return "Failed to upload to file storage. Please check your network connection and try again.";
     }
     if (errorMessage.includes("Upload failed")) {
-      return "파일 업로드에 실패했습니다. 다시 시도해주세요.";
+      return "File upload failed. Please try again.";
     }
 
-    // PDF 분석 관련 에러
+    // PDF analysis related errors
     if (errorMessage.includes("PDF 분석 실패")) {
-      return "이력서 분석에 실패했습니다. PDF 파일이 올바른지 확인해주세요.";
+      return "Resume analysis failed. Please check if the PDF file is valid.";
     }
 
-    // DB 제출 관련 에러
+    // Database submission related errors
     if (
       errorMessage.includes("wallet_address") ||
       errorMessage.includes("duplicate key") ||
       errorMessage.includes("unique constraint")
     ) {
-      return "이미 등록된 지갑 주소입니다. 다른 지갑으로 시도해주세요.";
+      return "This wallet address is already registered. Please try with a different wallet.";
     }
     if (errorMessage.includes("handle") && errorMessage.includes("unique")) {
-      return "이미 사용 중인 핸들입니다. 다른 핸들을 입력해주세요.";
+      return "This handle is already in use. Please enter a different handle.";
     }
 
-    // 기본 에러 메시지
+    // Default error message
     return errorMessage;
   };
 
   const handleSupplyClick = async () => {
-    // 필수 데이터 검증
+    // Required data validation
     if (!uploadResult || !analyzingResult || !currentAccount?.address) {
-      setAnalyzingError("필수 데이터가 누락되었습니다. 다시 시도해주세요.");
+      setAnalyzingError("Required data is missing. Please try again.");
       return;
     }
 
     try {
       resetSubmit();
 
-      // DB에 지원자 정보 저장
+      // Save applicant information to database
       await submitApplicantAsync({
         handle,
         walletAddress: currentAccount.address,
@@ -237,26 +237,26 @@ export default function SubmitPage() {
         isJobSeeking: true,
       });
     } catch (error) {
-      // 에러는 useSubmitApplicant 훅에서 처리됨
+      // Errors are handled by useSubmitApplicant hook
       console.error(error);
     }
   };
 
-  // 업로드 상태 정보
+  // Upload status information
   const getUploadStateInfo = (
     currentState: UploadState
   ): { label: string; progress: number } => {
     const stateMap: Record<UploadState, { label: string; progress: number }> = {
-      empty: { label: "대기 중", progress: 0 },
-      creating_policy: { label: "접근 정책 생성 중...", progress: 10 },
-      encrypting: { label: "파일 암호화 중...", progress: 25 },
-      encoding: { label: "인코딩 중...", progress: 40 },
-      encoded: { label: "인코딩 완료", progress: 45 },
-      registering: { label: "블록체인 등록 중...", progress: 60 },
-      uploading: { label: "업로드 중...", progress: 75 },
-      uploaded: { label: "업로드 완료", progress: 85 },
-      certifying: { label: "인증 중...", progress: 95 },
-      done: { label: "완료!", progress: 100 },
+      empty: { label: "Waiting", progress: 0 },
+      creating_policy: { label: "Creating access policy...", progress: 10 },
+      encrypting: { label: "Encrypting file...", progress: 25 },
+      encoding: { label: "Encoding...", progress: 40 },
+      encoded: { label: "Encoding completed", progress: 45 },
+      registering: { label: "Registering to blockchain...", progress: 60 },
+      uploading: { label: "Uploading...", progress: 75 },
+      uploaded: { label: "Upload completed", progress: 85 },
+      certifying: { label: "Certifying...", progress: 95 },
+      done: { label: "Complete!", progress: 100 },
     };
     return stateMap[currentState];
   };
@@ -284,7 +284,7 @@ export default function SubmitPage() {
                 {/* 1. PDF 파일 업로드 */}
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
-                    1. 이력서 PDF 파일
+                    1. Resume PDF
                   </label>
                   <input
                     ref={fileInputRef}
@@ -300,7 +300,7 @@ export default function SubmitPage() {
                         className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
                       >
                         <Upload className="w-4 h-4" />
-                        PDF 업로드
+                        PDF Upload
                       </Button>
                       {file && (
                         <span className="text-sm text-gray-300">
@@ -314,18 +314,18 @@ export default function SubmitPage() {
                   {file && (
                     <div className="mt-4 p-4 rounded-lg bg-black/40 border border-purple-500/30">
                       <h3 className="text-sm font-semibold text-purple-400 mb-3">
-                        파일 정보
+                        File Information
                       </h3>
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">파일명:</span>
+                          <span className="text-xs text-gray-400">Filename:</span>
                           <span className="text-sm text-white font-medium">
                             {file.name}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-400">
-                            파일 크기:
+                            File Size:
                           </span>
                           <span className="text-sm text-white">
                             {formatFileSize(file.size)}
@@ -333,7 +333,7 @@ export default function SubmitPage() {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-400">
-                            파일 타입:
+                            File Type:
                           </span>
                           <span className="text-sm text-white">
                             {file.type || "application/pdf"}
@@ -341,7 +341,7 @@ export default function SubmitPage() {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-400">
-                            최종 수정:
+                            Last Modified:
                           </span>
                           <span className="text-sm text-white">
                             {formatDate(file.lastModified)}
@@ -385,7 +385,7 @@ export default function SubmitPage() {
                       <div className="flex items-center gap-3">
                         <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
                         <span className="text-sm font-semibold text-emerald-300">
-                          PDF AI 분석 중...
+                          PDF AI Analysis in Progress...
                         </span>
                       </div>
                     </div>
@@ -397,7 +397,7 @@ export default function SubmitPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <CheckCircle2 className="w-5 h-5 text-green-400" />
                         <span className="text-sm font-semibold text-green-300">
-                          업로드 완료!
+                          Upload Complete!
                         </span>
                       </div>
                       <div className="space-y-1 text-xs">
@@ -417,19 +417,19 @@ export default function SubmitPage() {
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="w-5 h-5 text-green-400" />
                         <span className="text-sm font-semibold text-green-300">
-                          모든 작업이 완료되었습니다! 🎉
+                          All tasks completed! 🎉
                         </span>
                       </div>
                       <div className="mt-3 space-y-1 text-xs">
                         <div className="text-gray-400">
-                          ✓ 업로드 완료 (Blob ID:{" "}
+                          ✓ Upload completed (Blob ID:{" "}
                           <span className="text-green-300 font-mono">
                             {uploadResult.blobId.slice(0, 16)}...
                           </span>
                           )
                         </div>
                         <div className="text-gray-400">
-                          ✓ AI 분석 완료 (직무:{" "}
+                          ✓ AI analysis completed (Position:{" "}
                           <span className="text-green-300">
                             {analyzingResult.position}
                           </span>
@@ -477,12 +477,13 @@ export default function SubmitPage() {
                         </div>
                         <h3 className="text-2xl font-bold text-white">
                           Registration Complete!
+                          Registration Complete!
                         </h3>
                         <p className="text-green-300">
-                          Your application has been successfully submitted.
+                          Your application has been successfully registered.
                         </p>
                         <p className="text-sm text-green-400/80">
-                          Redirecting to the main page...
+                          Redirecting to main page...
                         </p>
                       </div>
                     </div>
@@ -493,23 +494,23 @@ export default function SubmitPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <label className="text-sm font-medium text-white">
-                      2. 본인 핸들
+                      2. Your Handle
                     </label>
                     {handleCheckStatus === "checking" && (
                       <div className="flex items-center gap-1 text-xs text-gray-400">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>확인 중...</span>
+                        <span>Checking...</span>
                       </div>
                     )}
                     {handleCheckStatus === "duplicate" && (
                       <div className="flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded-md border border-red-500/20">
-                        <span>⚠️ 이미 사용 중인 핸들입니다</span>
+                        <span>⚠️ Handle is already in use</span>
                       </div>
                     )}
                     {handleCheckStatus === "available" && (
                       <div className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20">
                         <CheckCircle2 className="w-3 h-3" />
-                        <span>사용 가능한 핸들입니다</span>
+                        <span>Handle is available</span>
                       </div>
                     )}
                   </div>
@@ -523,22 +524,21 @@ export default function SubmitPage() {
                       setHandle(withoutAt);
                     }}
                     className="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                    placeholder="@핸들을 입력하세요"
+                    placeholder="@Enter your handle"
                   />
                 </div>
 
                 {/* 3. AI 요약 정보 */}
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
-                    3. AI 요약
+                    3. AI Summary
                   </label>
                   <div className="p-4 rounded-lg bg-black/40 border border-purple-500/30">
                     {!analyzingResult ? (
                       <div className="flex items-center gap-3 text-gray-400 py-2">
                         <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
                         <p className="text-sm">
-                          제출 시 업로드된 PDF를 AI가 분석하여 자동으로 직무,
-                          기술 스택, 요약을 생성합니다.
+                        When you upload a PDF, AI analyzes it and automatically generates the job role, tech stack, and summary.
                         </p>
                       </div>
                     ) : (
@@ -627,7 +627,7 @@ export default function SubmitPage() {
                     {isSubmitting && (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     )}
-                    {isSubmitting ? "제출 중..." : "Register"}
+                    {isSubmitting ? "Submitting..." : "Register"}
                   </Button>
                 </div>
               </div>
