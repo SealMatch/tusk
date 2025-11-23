@@ -22,13 +22,14 @@ async function migrate() {
     await sql`CREATE EXTENSION IF NOT EXISTS vector`;
     console.log("✅ pgvector extension enabled");
 
-    // 실행할 마이그레이션 파일 목록 (0003~0007)
+    // 실행할 마이그레이션 파일 목록 (0003~0008)
     const migrationFiles = [
       "0003_famous_celestials.sql",
       "0004_lean_captain_cross.sql",
       "0005_absent_miss_america.sql",
       "0006_red_morgan_stark.sql",
       "0007_unique_morg.sql",
+      "0008_stale_blacklash.sql",
     ];
 
     for (const fileName of migrationFiles) {
