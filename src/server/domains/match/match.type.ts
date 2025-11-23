@@ -39,11 +39,19 @@ export interface UpdateMatchStatusParams {
 
 export interface ProfilePageDataResponse {
   userHandle: string;
-  requestedList: ProfilePageDataItem[];
-  receivedList: ProfilePageDataItem[];
+  currentApplicant: Applicant | null; // 현재 사용자의 applicant 정보 (승인/거절 시 필요)
+  requestedList: RequestedItem[]; // 내가 요청한 applicant들
+  receivedList: ReceivedItem[]; // 나에게 요청을 보낸 recruiter들
 }
 
-export interface ProfilePageDataItem {
+// 내가 요청한 매치 (recruiter 입장)
+export interface RequestedItem {
   applicant: Applicant;
+  match: Match;
+}
+
+// 내가 받은 매치 요청 (applicant 입장)
+export interface ReceivedItem {
+  recruiterWalletAddress: string;
   match: Match;
 }

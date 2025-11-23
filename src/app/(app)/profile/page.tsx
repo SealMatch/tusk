@@ -7,7 +7,7 @@ import { cn } from "@/clients/shared/libs";
 import { Badge, Button } from "@/clients/shared/ui";
 import { formatAddress } from "@/clients/shared/utils";
 import { getStatusColor } from "@/clients/shared/utils/profile-page.utils";
-import { ProfilePageDataItem } from "@/server/domains/match/match.type";
+import { RequestedItem, ReceivedItem } from "@/server/domains/match/match.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -39,11 +39,11 @@ export default function ProfilePage() {
     currentAccount?.address ?? ""
   );
 
-  const requestedList: ProfilePageDataItem[] = useMemo(() => {
+  const requestedList: RequestedItem[] = useMemo(() => {
     return data?.requestedList ?? [];
   }, [data]);
 
-  const receivedList: ProfilePageDataItem[] = useMemo(() => {
+  const receivedList: ReceivedItem[] = useMemo(() => {
     return data?.receivedList ?? [];
   }, [data]);
 
@@ -66,26 +66,30 @@ export default function ProfilePage() {
     }
   };
 
-  const onApprove = async (request: ProfilePageDataItem) => {
+  const onApprove = async (request: ReceivedItem) => {
+    // Use currentApplicant from profile data
+    const currentApplicant = data?.currentApplicant;
+
     if (
       !request.match.viewRequestId ||
-      !request.applicant.sealPolicyId ||
-      !request.applicant.capId ||
       !request.match.id ||
       !request.match.recruiterWalletAddress ||
-      !request.applicant.id
+      !currentApplicant?.sealPolicyId ||
+      !currentApplicant?.capId ||
+      !currentApplicant?.id
     ) {
       console.error("Missing required IDs for approval");
       return;
     }
+
     try {
       await handleApproveAccess({
         viewRequestId: request.match.viewRequestId,
-        policyObjectId: request.applicant.sealPolicyId,
-        adminCapId: request.applicant.capId,
+        policyObjectId: currentApplicant.sealPolicyId,
+        adminCapId: currentApplicant.capId,
         matchId: request.match.id,
         recruiterWalletAddress: request.match.recruiterWalletAddress,
-        applicantId: request.applicant.id,
+        applicantId: currentApplicant.id,
       });
 
       // 캐시 무효화 → 자동 refetch
@@ -97,24 +101,28 @@ export default function ProfilePage() {
     }
   };
 
-  const onReject = async (request: ProfilePageDataItem) => {
+  const onReject = async (request: ReceivedItem) => {
+    // Use currentApplicant from profile data
+    const currentApplicant = data?.currentApplicant;
+
     if (
       !request.match.viewRequestId ||
-      !request.applicant.sealPolicyId ||
       !request.match.id ||
       !request.match.recruiterWalletAddress ||
-      !request.applicant.id
+      !currentApplicant?.sealPolicyId ||
+      !currentApplicant?.id
     ) {
       console.error("Missing required IDs for rejection");
       return;
     }
+
     try {
       await handleRejectAccess({
         viewRequestId: request.match.viewRequestId,
-        policyObjectId: request.applicant.sealPolicyId,
+        policyObjectId: currentApplicant.sealPolicyId,
         matchId: request.match.id,
         recruiterWalletAddress: request.match.recruiterWalletAddress,
-        applicantId: request.applicant.id,
+        applicantId: currentApplicant.id,
       });
 
       // 캐시 무효화 → 자동 refetch
@@ -278,102 +286,79 @@ export default function ProfilePage() {
                     : "You haven't received any access requests yet."}
                 </p>
               </div>
-            ) : (
-              (activeTab === "submitted" ? requestedList : receivedList).map(
-                (request: ProfilePageDataItem) => (
+            ) : activeTab === "submitted" ? (
+              requestedList.map(
+                (request: RequestedItem) => (
                   <div key={request.match.id}>
                     <div className="group overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-black/40 via-black/30 to-black/20 backdrop-blur-xl transition-all duration-300 hover:border-white/40 hover:shadow-lg hover:shadow-purple-500/10">
                       <div className="p-6">
                         {/* Direction Indicator with Arrow */}
                         <div className="mb-4 flex items-center gap-3">
-                          {activeTab === "submitted" ? (
-                            <>
-                              {/* You → Applicant */}
-                              <div className="flex items-center gap-2 text-purple-400">
-                                <div className="flex items-center gap-2 rounded-lg bg-purple-500/10 px-3 py-1.5 border border-purple-500/30">
-                                  <User className="w-4 h-4" />
-                                  <span className="text-sm font-medium">You</span>
-                                </div>
-                                <ArrowRight className="w-5 h-5 text-purple-400" />
-                                <div className="flex items-center gap-2 rounded-lg bg-cyan-500/10 px-3 py-1.5 border border-cyan-500/30">
-                                  <User className="w-4 h-4 text-cyan-400" />
-                                  <span className="text-sm font-medium text-cyan-400">
-                                    {request.applicant.handle}
-                                  </span>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              {/* Recruiter → You */}
-                              <div className="flex items-center gap-2 text-cyan-400">
-                                <div className="flex items-center gap-2 rounded-lg bg-cyan-500/10 px-3 py-1.5 border border-cyan-500/30">
-                                  <Wallet className="w-4 h-4" />
-                                  <span className="text-sm font-medium text-gray-300">
-                                    {formatAddress(request.match.recruiterWalletAddress)}
-                                  </span>
-                                </div>
-                                <ArrowRight className="w-5 h-5 text-cyan-400" />
-                                <div className="flex items-center gap-2 rounded-lg bg-purple-500/10 px-3 py-1.5 border border-purple-500/30">
-                                  <User className="w-4 h-4 text-purple-400" />
-                                  <span className="text-sm font-medium text-purple-400">You</span>
-                                </div>
-                              </div>
-                            </>
-                          )}
+                          {/* You → Applicant */}
+                          <div className="flex items-center gap-2 text-purple-400">
+                            <div className="flex items-center gap-2 rounded-lg bg-purple-500/10 px-3 py-1.5 border border-purple-500/30">
+                              <User className="w-4 h-4" />
+                              <span className="text-sm font-medium">You</span>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-purple-400" />
+                            <div className="flex items-center gap-2 rounded-lg bg-cyan-500/10 px-3 py-1.5 border border-cyan-500/30">
+                              <User className="w-4 h-4 text-cyan-400" />
+                              <span className="text-sm font-medium text-cyan-400">
+                                {request.applicant.handle}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Applicant Info Section - Only show for submitted tab */}
-                        {activeTab === "submitted" && (
-                          <div className="mb-4 space-y-3">
-                            {/* Position */}
-                            {request.applicant.position && (
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/10">
-                                  <User className="h-4 w-4 text-purple-400" />
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-400">Position</p>
-                                  <p className="text-sm font-semibold text-white">
-                                    {request.applicant.position}
-                                  </p>
-                                </div>
+                        {/* Applicant Info Section */}
+                        <div className="mb-4 space-y-3">
+                          {/* Position */}
+                          {request.applicant.position && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/10">
+                                <User className="h-4 w-4 text-purple-400" />
                               </div>
-                            )}
-
-                            {/* Tech Stack */}
-                            {request.applicant.techStack && request.applicant.techStack.length > 0 && (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10">
-                                    <Code2 className="h-4 w-4 text-cyan-400" />
-                                  </div>
-                                  <p className="text-xs text-gray-400">Tech Stack</p>
-                                </div>
-                                <div className="flex flex-wrap gap-2 ml-10">
-                                  {request.applicant.techStack.map((tech: string, idx: number) => (
-                                    <Badge
-                                      key={idx}
-                                      className="rounded-md border border-white/20 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 px-2.5 py-1 text-xs font-medium text-white hover:from-purple-500/20 hover:to-cyan-500/20 transition-colors"
-                                    >
-                                      {tech}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* AI Summary Preview */}
-                            {request.applicant.aiSummary && (
-                              <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-                                <p className="text-xs text-gray-400 mb-1">AI Summary</p>
-                                <p className="text-sm text-gray-300 line-clamp-2">
-                                  {request.applicant.aiSummary}
+                              <div>
+                                <p className="text-xs text-gray-400">Position</p>
+                                <p className="text-sm font-semibold text-white">
+                                  {request.applicant.position}
                                 </p>
                               </div>
-                            )}
-                          </div>
-                        )}
+                            </div>
+                          )}
+
+                          {/* Tech Stack */}
+                          {request.applicant.techStack && request.applicant.techStack.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10">
+                                  <Code2 className="h-4 w-4 text-cyan-400" />
+                                </div>
+                                <p className="text-xs text-gray-400">Tech Stack</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2 ml-10">
+                                {request.applicant.techStack.map((tech: string, idx: number) => (
+                                  <Badge
+                                    key={idx}
+                                    className="rounded-md border border-white/20 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 px-2.5 py-1 text-xs font-medium text-white hover:from-purple-500/20 hover:to-cyan-500/20 transition-colors"
+                                  >
+                                    {tech}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* AI Summary Preview */}
+                          {request.applicant.aiSummary && (
+                            <div className="rounded-lg bg-white/5 p-3 border border-white/10">
+                              <p className="text-xs text-gray-400 mb-1">AI Summary</p>
+                              <p className="text-sm text-gray-300 line-clamp-2">
+                                {request.applicant.aiSummary}
+                              </p>
+                            </div>
+                          )}
+                        </div>
 
                         {/* Status and Actions */}
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-white/10">
@@ -384,40 +369,84 @@ export default function ProfilePage() {
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            {!(
-                              activeTab === "received" &&
-                              request.match.status === "pending"
-                            ) && (
-                                <Badge
-                                  className={cn(
-                                    "rounded-full border px-3 py-1 text-xs font-medium capitalize",
-                                    getStatusColor(request.match.status)
-                                  )}
+                            <Badge
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs font-medium capitalize",
+                                getStatusColor(request.match.status)
+                              )}
+                            >
+                              {request.match.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )
+            ) : (
+              receivedList.map(
+                (request: ReceivedItem) => (
+                  <div key={request.match.id}>
+                    <div className="group overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-black/40 via-black/30 to-black/20 backdrop-blur-xl transition-all duration-300 hover:border-white/40 hover:shadow-lg hover:shadow-purple-500/10">
+                      <div className="p-6">
+                        {/* Direction Indicator with Arrow */}
+                        <div className="mb-4 flex items-center gap-3">
+                          {/* Recruiter → You */}
+                          <div className="flex items-center gap-2 text-cyan-400">
+                            <div className="flex items-center gap-2 rounded-lg bg-cyan-500/10 px-3 py-1.5 border border-cyan-500/30">
+                              <Wallet className="w-4 h-4" />
+                              <span className="text-sm font-medium text-gray-300">
+                                {formatAddress(request.recruiterWalletAddress)}
+                              </span>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-cyan-400" />
+                            <div className="flex items-center gap-2 rounded-lg bg-purple-500/10 px-3 py-1.5 border border-purple-500/30">
+                              <User className="w-4 h-4 text-purple-400" />
+                              <span className="text-sm font-medium text-purple-400">You</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status and Actions */}
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-white/10">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-gray-500" />
+                            <p className="text-xs text-gray-500">
+                              {new Date(request.match.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {!(request.match.status === "pending") && (
+                              <Badge
+                                className={cn(
+                                  "rounded-full border px-3 py-1 text-xs font-medium capitalize",
+                                  getStatusColor(request.match.status)
+                                )}
+                              >
+                                {request.match.status}
+                              </Badge>
+                            )}
+                            {request.match.status === "pending" && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/20"
+                                  onClick={() => onApprove(request)}
                                 >
-                                  {request.match.status}
-                                </Badge>
-                              )}
-                            {activeTab === "received" &&
-                              request.match.status === "pending" && (
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/20"
-                                    onClick={() => onApprove(request)}
-                                  >
-                                    <CheckCircle2 className="w-4 h-4 mr-1" />
-                                    승인
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 transition-all hover:shadow-lg hover:shadow-red-500/20"
-                                    onClick={() => onReject(request)}
-                                  >
-                                    <XCircle className="w-4 h-4 mr-1" />
-                                    거절
-                                  </Button>
-                                </div>
-                              )}
+                                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                                  승인
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 transition-all hover:shadow-lg hover:shadow-red-500/20"
+                                  onClick={() => onReject(request)}
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  거절
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
