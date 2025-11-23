@@ -4,6 +4,7 @@ import {
   ApplicantsRepository,
   applicantsRepository,
 } from "../applicants/applicants.repository";
+import { Applicant } from "../applicants/applicants.type";
 import { MatchRepository, matchRepository } from "./match.repository";
 import {
   CreateMatchParams,
@@ -275,10 +276,36 @@ class MatchService {
       });
 
       // 5. receivedList 구성 (applicant가 받은 매치)
-      const receivedList = receivedMatches.map((match) => ({
-        match,
-        applicant: applicant!,
-      }));
+      const recruiterWalletAddresses = receivedMatches.map(
+        (m) => m.recruiterWalletAddress
+      );
+      const recruiterApplicants =
+        await this.applicantsRepository.findByWalletAddresses(
+          recruiterWalletAddresses
+        );
+
+      const receivedList = receivedMatches
+        .map((match) => {
+          const recruiterApplicant = recruiterApplicants.find(
+            (a) => a.walletAddress === match.recruiterWalletAddress
+          );
+
+          if (!recruiterApplicant) {
+            console.warn(
+              `⚠️ Recruiter applicant not found for wallet: ${match.recruiterWalletAddress}`
+            );
+            return null;
+          }
+
+          return {
+            match,
+            applicant: recruiterApplicant,
+          };
+        })
+        .filter(
+          (item): item is { match: Match; applicant: Applicant } =>
+            item !== null
+        );
 
       console.log("✅ Profile page data fetched:", {
         requestedCount: requestedList.length,

@@ -264,27 +264,6 @@ export default function SubmitPage() {
   const isUploading = state !== "empty" && state !== "done";
   const uploadStateInfo = getUploadStateInfo(state);
 
-  // 통합 진행률 계산 (0~100%)
-  const getOverallProgress = (): number => {
-    // 업로드 단계: 0~70%
-    if (state !== "done") {
-      return uploadStateInfo.progress * 0.7;
-    }
-
-    // 업로드 완료 + PDF 분석 중: 70~90%
-    if (state === "done" && isAnalyzingPdf) {
-      return 85;
-    }
-
-    // 둘 다 완료: 100%
-    if (state === "done" && analyzingResult) {
-      return 100;
-    }
-
-    // 업로드만 완료: 70%
-    return 70;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-4 sm:p-8">
       <div className="mx-auto max-w-4xl">
