@@ -37,8 +37,46 @@ export default function SubmitPage() {
     reset: resetSubmit,
   } = useSubmitApplicant();
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     handleFileChange(event);
+
+    // 파일 선택 시 자동으로 업로드 + PDF 분석 병렬 실행
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      console.log("[Submit] 파일 선택됨, 업로드 & PDF 분석 병렬 시작");
+
+      // 병렬 실행
+      const results = await Promise.allSettled([
+        handleSubmit(selectedFile), // Walrus/Sui/Seal 업로드 (파일 직접 전달)
+        analyzePdf(selectedFile), // PDF AI 분석
+      ]);
+
+      const [uploadResultPromise, summaryResultPromise] = results;
+
+      // 업로드 실패 체크
+      if (uploadResultPromise.status === "rejected") {
+        console.error("[FileSelect] 업로드 실패:", uploadResultPromise.reason);
+      }
+
+      // PDF 분석 성공 시 결과 저장
+      if (summaryResultPromise.status === "fulfilled") {
+        setAnalyzingResult(summaryResultPromise.value);
+        console.log("[FileSelect] PDF 분석 완료:", summaryResultPromise.value);
+      } else {
+        console.error(
+          "[FileSelect] PDF 분석 실패:",
+          summaryResultPromise.reason
+        );
+        setAnalyzingError(
+          "PDF 분석 실패: " +
+            (summaryResultPromise.reason instanceof Error
+              ? summaryResultPromise.reason.message
+              : "알 수 없는 오류")
+        );
+      }
+    }
   };
 
   const handleFileButtonClick = () => {
@@ -90,38 +128,20 @@ export default function SubmitPage() {
     aiSummary: string;
   } | null>(null);
 
-  const handleSupplyClick = async () => {
-    // Reset submit states
-    resetSubmit();
-    setAnalyzingError(null);
+  // PDF 분석 함수 (분리)
+  const analyzePdf = async (
+    pdfFile: File
+  ): Promise<{
+    position: string;
+    techStack: string[];
+    aiSummary: string;
+  }> => {
+    console.log("[PDF Analysis] 시작");
+    setIsAnalyzingPdf(true);
 
-    // 1. 먼저 파일 업로드 (아직 업로드되지 않았다면)
-    if (state !== "done") {
-      await handleSubmit();
-    }
-
-    // 2. 업로드가 완료되지 않았으면 에러 처리
-    if (state !== "done" || !uploadResult) {
-      // 에러는 useFileUpload의 error state에서 처리됨
-      return;
-    }
-
-    // 3. 필수 필드 검증
-    if (!handle.trim() || !file) {
-      return;
-    }
-
-    // 4. PDF 분석 API 호출
-    let summaryData: {
-      position: string;
-      techStack: string[];
-      aiSummary: string;
-    } | null = null;
     try {
-      setIsAnalyzingPdf(true);
-
       const formData = new FormData();
-      formData.append("pdf", file);
+      formData.append("pdf", pdfFile);
 
       const response = await fetch("/api/v1/summary", {
         method: "POST",
@@ -129,55 +149,51 @@ export default function SubmitPage() {
       });
 
       const result = await response.json();
-      console.log("PDF 분석 결과:", result);
+      console.log("[PDF Analysis] 완료:", result);
 
       if (!result.success) {
         throw new Error(result.errorMessage || "PDF 분석에 실패했습니다.");
       }
 
-      summaryData = result.data;
-      setAnalyzingResult(summaryData);
+      return result.data;
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "PDF 분석 중 오류가 발생했습니다.";
-      console.error("PDF 분석 중 오류:", error);
+      console.error("[PDF Analysis] 오류:", error);
       setAnalyzingError(errorMessage);
-      setIsAnalyzingPdf(false);
-      setAnalyzingResult(null);
-      return;
+      throw error;
     } finally {
       setIsAnalyzingPdf(false);
     }
+  };
 
-    // 5. summaryData 확인
-    if (!summaryData) {
-      setAnalyzingError("PDF 분석 결과를 받지 못했습니다.");
-      return;
-    }
+  const handleSupplyClick = async () => {
+    // 업로드와 PDF 분석은 이미 완료되었으므로,
+    // 최종 제출만 수행 (uploadResult, analyzingResult 사용)
+    console.log("[Supply] 최종 제출 시작");
+    console.log("[Supply] 업로드 결과:", uploadResult);
+    console.log("[Supply] PDF 분석 결과:", analyzingResult);
+    console.log("[Supply] 핸들:", handle);
 
-    // 6. 지원자 등록 API 호출
+    // TODO: 실제 DB 제출 로직 구현
+    // submitApplicantAsync()를 호출하여 데이터베이스에 저장
+    // 현재는 로그만 출력
+
     try {
-      await submitApplicantAsync({
-        handle: handle.trim(),
-        walletAddress: currentAccount?.address ?? "",
-        position: summaryData.position,
-        techStack: summaryData.techStack,
-        aiSummary: summaryData.aiSummary,
-        blobId: uploadResult.blobId,
-        capId: uploadResult.capId,
-        sealPolicyId: uploadResult.policyObjectId,
-        encryptionId: uploadResult.encryptionId,
-        accessPrice: 0, // TODO: 가격 설정 UI 추가 시 교체
-        isJobSeeking: true,
-      });
+      resetSubmit();
 
-      // 폼 초기화 (선택사항)
-      // setHandle("");
+      // 최종 제출 로직이 구현될 위치
+      // await submitApplicantAsync({
+      //   handle,
+      //   uploadResult,
+      //   analyzingResult,
+      // });
+
+      console.log("[Supply] ✅ 제출 준비 완료 (실제 제출 로직은 TODO)");
     } catch (error) {
-      // 에러는 useMutation에서 자동으로 처리됨
-      console.error("지원자 등록 중 오류:", error);
+      console.error("[Supply] 제출 오류:", error);
     }
   };
 
@@ -187,8 +203,9 @@ export default function SubmitPage() {
   ): { label: string; progress: number } => {
     const stateMap: Record<UploadState, { label: string; progress: number }> = {
       empty: { label: "대기 중", progress: 0 },
-      encrypting: { label: "파일 암호화 중...", progress: 15 },
-      encoding: { label: "인코딩 중...", progress: 30 },
+      creating_policy: { label: "접근 정책 생성 중...", progress: 10 },
+      encrypting: { label: "파일 암호화 중...", progress: 25 },
+      encoding: { label: "인코딩 중...", progress: 40 },
       encoded: { label: "인코딩 완료", progress: 45 },
       registering: { label: "블록체인 등록 중...", progress: 60 },
       uploading: { label: "업로드 중...", progress: 75 },
@@ -201,6 +218,29 @@ export default function SubmitPage() {
 
   const isUploading = state !== "empty" && state !== "done";
   const uploadStateInfo = getUploadStateInfo(state);
+
+  // 통합 진행률 계산 (0~100%)
+  const getOverallProgress = (): number => {
+    // 업로드 단계: 0~70%
+    if (state !== "done") {
+      return uploadStateInfo.progress * 0.7;
+    }
+
+    // 업로드 완료 + PDF 분석 중: 70~90%
+    if (state === "done" && isAnalyzingPdf) {
+      return 85;
+    }
+
+    // 둘 다 완료: 100%
+    if (state === "done" && analyzingResult) {
+      return 100;
+    }
+
+    // 업로드만 완료: 70%
+    return 70;
+  };
+
+  const overallProgress = getOverallProgress();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-4 sm:p-8">
@@ -231,17 +271,27 @@ export default function SubmitPage() {
                     onChange={handleFileSelect}
                     className="hidden"
                   />
-                  <div className="flex items-center gap-4">
-                    <Button
-                      onClick={handleFileButtonClick}
-                      className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
-                    >
-                      <Upload className="w-4 h-4" />
-                      PDF 업로드
-                    </Button>
-                    {file && (
-                      <span className="text-sm text-gray-300">{file.name}</span>
-                    )}
+                  <div className="flex flex-row items-center gap-4 justify-between">
+                    <div className="flex flex-row items-center gap-2">
+                      <Button
+                        onClick={handleFileButtonClick}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+                      >
+                        <Upload className="w-4 h-4" />
+                        PDF 업로드
+                      </Button>
+                      {file && (
+                        <span className="text-sm text-gray-300">
+                          {file.name}
+                        </span>
+                      )}
+                    </div>
+                    {/* {(isUploading || isAnalyzingPdf) && (
+                      <ProgressBar
+                        value={overallProgress}
+                        className="w-[30%]"
+                      />
+                    )} */}
                   </div>
 
                   {/* File Metadata Display */}
@@ -313,8 +363,20 @@ export default function SubmitPage() {
                     </div>
                   )}
 
+                  {/* PDF Analysis Progress Display */}
+                  {isAnalyzingPdf && (
+                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-br from-emerald-900/30 to-teal-900/30 border border-emerald-500/50 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+                        <span className="text-sm font-semibold text-emerald-300">
+                          PDF AI 분석 중...
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Upload Success Display */}
-                  {state === "done" && uploadResult && (
+                  {state === "done" && uploadResult && !analyzingResult && (
                     <div className="mt-4 p-4 rounded-lg bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/50 backdrop-blur-sm">
                       <div className="flex items-center gap-3 mb-3">
                         <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -328,6 +390,34 @@ export default function SubmitPage() {
                           <span className="text-green-300 font-mono">
                             {uploadResult.blobId.slice(0, 20)}...
                           </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* All Tasks Complete Display */}
+                  {state === "done" && uploadResult && analyzingResult && (
+                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/50 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-green-400" />
+                        <span className="text-sm font-semibold text-green-300">
+                          모든 작업이 완료되었습니다! 🎉
+                        </span>
+                      </div>
+                      <div className="mt-3 space-y-1 text-xs">
+                        <div className="text-gray-400">
+                          ✓ 업로드 완료 (Blob ID:{" "}
+                          <span className="text-green-300 font-mono">
+                            {uploadResult.blobId.slice(0, 16)}...
+                          </span>
+                          )
+                        </div>
+                        <div className="text-gray-400">
+                          ✓ AI 분석 완료 (직무:{" "}
+                          <span className="text-green-300">
+                            {analyzingResult.position}
+                          </span>
+                          )
                         </div>
                       </div>
                     </div>
@@ -485,31 +575,25 @@ export default function SubmitPage() {
                     onClick={handleSupplyClick}
                     disabled={
                       isSubmitting ||
-                      isUploading ||
-                      isAnalyzingPdf ||
-                      !file ||
-                      !handle.trim()
+                      state !== "done" ||
+                      !uploadResult ||
+                      !handle.trim() ||
+                      handleCheckStatus !== "available"
                     }
                     className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
                       isSubmitting ||
-                      isUploading ||
-                      isAnalyzingPdf ||
-                      !file ||
-                      !handle.trim()
+                      state !== "done" ||
+                      !uploadResult ||
+                      !handle.trim() ||
+                      handleCheckStatus !== "available"
                         ? "bg-gray-600 cursor-not-allowed opacity-50"
                         : "bg-blue-600 hover:bg-blue-700"
                     } text-white`}
                   >
-                    {(isSubmitting || isUploading || isAnalyzingPdf) && (
+                    {isSubmitting && (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     )}
-                    {isAnalyzingPdf
-                      ? "PDF 분석 중..."
-                      : isSubmitting
-                      ? "제출 중..."
-                      : isUploading
-                      ? "업로드 중..."
-                      : "Supply"}
+                    {isSubmitting ? "제출 중..." : "Supply"}
                   </Button>
                 </div>
               </div>

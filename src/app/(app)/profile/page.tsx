@@ -1,11 +1,11 @@
 "use client";
 
-import { useProfilePageData } from "@/clients/shared/hooks/useProfilePageData";
 import { useApproveAccess } from "@/clients/shared/hooks/useApproveAccess";
+import { useProfilePageData } from "@/clients/shared/hooks/useProfilePageData";
 import { useRejectAccess } from "@/clients/shared/hooks/useRejectAccess";
 import { cn } from "@/clients/shared/libs";
 import { Badge, Button } from "@/clients/shared/ui";
-import { formatAddress, testWalletAddress } from "@/clients/shared/utils";
+import { formatAddress } from "@/clients/shared/utils";
 import { getStatusColor } from "@/clients/shared/utils/profile-page.utils";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import {
@@ -42,7 +42,7 @@ export default function ProfilePage() {
   const { handleRejectAccess } = useRejectAccess();
 
   const { data, isLoading, error } = useProfilePageData(
-    testWalletAddress ? testWalletAddress : currentAccount?.address ?? ""
+    currentAccount?.address ?? ""
   );
 
   const requestedList: AccessRequest[] = useMemo(() => {
@@ -88,12 +88,16 @@ export default function ProfilePage() {
         await navigator.clipboard.writeText(currentAccount.address);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      } catch { }
+      } catch {}
     }
   };
 
   const onApprove = async (request: AccessRequest) => {
-    if (!request.viewRequestId || !request.policyObjectId || !request.adminCapId) {
+    if (
+      !request.viewRequestId ||
+      !request.policyObjectId ||
+      !request.adminCapId
+    ) {
       console.error("Missing required IDs for approval");
       return;
     }

@@ -52,7 +52,7 @@ export function WalrusUpload({ onUploadComplete }: WalrusUploadProps = {}) {
 
 				{/* Upload Button */}
 				<button
-					onClick={handleSubmit}
+					onClick={() => handleSubmit()}
 					disabled={!file || state !== 'empty'}
 					className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors duration-200"
 				>
