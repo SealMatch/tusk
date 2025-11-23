@@ -1,6 +1,6 @@
 "use client";
 
-import { usePdfDownload, useRequestAccess } from "@/clients/shared/hooks";
+import { useRequestAccess } from "@/clients/shared/hooks";
 import { useSearchResultStore } from "@/clients/shared/stores";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQueryClient } from "@tanstack/react-query";
@@ -115,7 +115,6 @@ export function ResumeDetailModal({
 
   const { error, state, handleDownload, isDownloading } = useFileDownload();
 
-
   // const { data: onChainStatus } = useViewRequestStatus({
   //   recruiterAddress: companyAddress,
   //   candidateId: blobId,
@@ -135,8 +134,7 @@ export function ResumeDetailModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
           className="bg-[#2f2f2f] rounded-xl border border-gray-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
+          onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className="sticky top-0 bg-[#2f2f2f] border-b border-gray-700 p-6 flex items-center justify-between">
             <h1 className="text-xl font-bold text-white">
@@ -144,8 +142,7 @@ export function ResumeDetailModal({
             </h1>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors text-gray-400 hover:text-white"
-            >
+              className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -163,7 +160,7 @@ export function ResumeDetailModal({
                     Target Position
                   </h4>
                   <p className="text-lg font-semibold text-white tracking-tight">
-                    {selectedApplicant.position || "직무 정보 없음"}
+                    {selectedApplicant.position || "No position info"}
                   </p>
                 </div>
               </div>
@@ -181,15 +178,14 @@ export function ResumeDetailModal({
                     {selectedApplicant.techStack?.map((tech, i) => (
                       <span
                         key={i}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
-                      >
+                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20 hover:bg-blue-500/20 transition-colors">
                         {tech}
                       </span>
                     )) || (
-                        <span className="text-gray-500 text-sm">
-                          기술 스택 정보 없음
-                        </span>
-                      )}
+                      <span className="text-gray-500 text-sm">
+                        No tech stack info
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -204,7 +200,7 @@ export function ResumeDetailModal({
                     AI Analysis
                   </h4>
                   <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 leading-relaxed">
-                    {selectedApplicant.aiSummary || "정보 없음"}
+                    {selectedApplicant.aiSummary || "No information"}
                   </div>
                 </div>
               </div>
@@ -214,36 +210,35 @@ export function ResumeDetailModal({
             <div className="mt-8 pt-6 border-t border-gray-700">
               {match?.status === "approved" ? (
                 <button
-                  onClick={() => handleDownload({ blobId, policyObjectId, encryptionId })}
+                  onClick={() =>
+                    handleDownload({ blobId, policyObjectId, encryptionId })
+                  }
                   disabled={isDownloading}
-                  className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   {state === "downloading"
-                    ? "파일 다운로드 중..."
+                    ? "Downloading file..."
                     : state === "creating_session"
-                      ? "세션 생성 중..."
-                      : state === "signing"
-                        ? "서명 중..."
-                        : state === "decrypting"
-                          ? "복호화 중..."
-                          : state === "done"
-                            ? "다운로드 완료!"
-                            : "이력서 다운로드"}
+                    ? "Creating session..."
+                    : state === "signing"
+                    ? "Signing..."
+                    : state === "decrypting"
+                    ? "Decrypting..."
+                    : state === "done"
+                    ? "Download complete!"
+                    : "Download Resume"}
                 </button>
               ) : match?.status === "pending" ? (
                 <button
                   disabled
-                  className="w-full px-6 py-3 rounded-lg bg-yellow-600/50 text-white font-medium cursor-not-allowed"
-                >
-                  열람 승인 대기 중
+                  className="w-full px-6 py-3 rounded-lg bg-yellow-600/50 text-white font-medium cursor-not-allowed">
+                  Awaiting Approval
                 </button>
               ) : (
                 <button
                   onClick={handlePermissionRequest}
                   disabled={isRequesting}
-                  className="w-full px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isRequesting ? "요청 중..." : "열람 권한 요청"}
+                  className="w-full px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isRequesting ? "Requesting..." : "Request Access"}
                 </button>
               )}
             </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchHistory } from "@/clients/shared/hooks/useSearchHistory";
 import { useSearchStore } from "@/clients/shared/stores";
 import { Button, Textarea } from "@/clients/shared/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +22,7 @@ type SearchFormData = z.infer<typeof searchSchema>;
 export default function SearchFormPage() {
   const router = useRouter();
   const addHistory = useSearchStore((state) => state.addHistory);
+  const { invalidateHistory } = useSearchHistory();
 
   const {
     register,
@@ -40,6 +42,7 @@ export default function SearchFormPage() {
 
   const onSubmit = (data: SearchFormData) => {
     addHistory(data.query);
+    invalidateHistory(); // 이렇게 사용
 
     const params = new URLSearchParams({ query: data.query });
     router.push(`/search/results?${params.toString()}`);

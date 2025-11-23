@@ -29,7 +29,7 @@ function SkillStackPreview({
         ))}
         {remainingCount > 0 && (
           <span className="text-xs text-gray-500 shrink-0 whitespace-nowrap">
-            {remainingCount} more
+            ...
           </span>
         )}
       </div>
@@ -73,15 +73,18 @@ function SearchResultsPageContent() {
       return searchResultCards;
     },
     enabled: !!query,
-    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
   });
 
-  // 검색 성공 시 이력 목록 갱신
   useEffect(() => {
     if (searchResultCards) {
       setSearchResultList(searchResultCards);
+
+      // 검색 성공 후 히스토리 갱신
+      queryClient.invalidateQueries({
+        queryKey: ["search-history"],
+      });
     }
-  }, [searchResultCards, setSearchResultList]);
+  }, [searchResultCards, setSearchResultList, queryClient]);
 
   const handleCardClick = (selectedResult: SearchResultCard) => {
     if (!selectedResult) return;
@@ -165,39 +168,40 @@ function SearchResultsPageContent() {
       </div>
 
       {/* 결과 그리드 - 3열 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
         {sortedResults.map((result) => (
           <button
             key={result.applicant.id}
             onClick={() => handleCardClick(result)}
             disabled={!result.applicant.blobId}
-            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed">
+            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col min-h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed">
             {/* 상단 정보: 핸들 & 유사도 */}
-            <div className="flex justify-between items-start mb-2 w-full">
-              <span className="text-xs text-gray-400 font-medium truncate max-w-[60%]">
-                @{result.applicant.handle}
-              </span>
-              <div className="flex flex-col items-end gap-1">
+            <div className="flex justify-between items-center mb-1 w-full">
+              <div className="flex items-center gap-2">
                 <span className="px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
                   Similarity: {(result.similarity * 100).toFixed(0)}%
                 </span>
                 {result.match && (
                   <span className="px-2.5 py-1 bg-green-500/15 text-green-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
-                    Request Status: {result.match.status}
+                    {result.match.status.toUpperCase()}
                   </span>
                 )}
               </div>
             </div>
 
             {/* 직무 */}
-            <div className="mb-1 w-full">
+            <div className="mb-0.5 w-full">
               <p className="text-white font-semibold text-base truncate pr-2">
                 {result.applicant.position || "Unknown Position"}
               </p>
+
+              <span className="text-xs text-gray-400 font-medium truncate max-w-[60%]">
+                @{result.applicant.handle}
+              </span>
             </div>
 
             {/* 가격 정보 */}
-            <div className="mb-2">
+            <div className="mb-0.5">
               <span className="text-xs text-gray-500">
                 Access: {result.applicant.accessPrice ?? 0} WAL
               </span>
