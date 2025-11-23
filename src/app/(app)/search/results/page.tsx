@@ -3,7 +3,6 @@
 import { ResumeDetailModal, SkillBadge } from "@/clients/shared/components";
 import { customAxios } from "@/clients/shared/libs/axios.libs";
 import { useSelectedApplicantStore } from "@/clients/shared/stores";
-import { SearchResultItem } from "@/server/domains/applicants/applicants.type";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -79,13 +78,19 @@ function SearchResultsPageContent() {
     }
   }, [isSuccess, recruiterWalletAddress, queryClient]);
 
-  const { setSelectedApplicant } = useSelectedApplicantStore();
+  const { setSelectedApplicant, setSelectedApplicantMatchInfo } =
+    useSelectedApplicantStore();
 
-  const handleCardClick = (applicant: SearchResultItem) => {
+  const handleCardClick = (selectedResult: SearchResultCard) => {
+    if (!selectedResult) return;
+
+    const { applicant, match } = selectedResult;
     if (!applicant.blobId) return;
+
     setSelectedApplicant(applicant);
     setSelectedBlobId(applicant.blobId);
     setIsModalOpen(true);
+    setSelectedApplicantMatchInfo(match);
   };
 
   // 검색 키워드와 매칭되는 스킬을 앞으로 정렬
@@ -162,7 +167,7 @@ function SearchResultsPageContent() {
         {sortedResults.map((result) => (
           <button
             key={result.applicant.id}
-            onClick={() => handleCardClick({ ...result.applicant, similarity: result.similarity })}
+            onClick={() => handleCardClick(result)}
             disabled={!result.applicant.blobId}
             className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -234,11 +239,13 @@ function SearchResultsPageContent() {
 
 export default function SearchResultsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400">로딩 중...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-gray-400">로딩 중...</div>
+        </div>
+      }
+    >
       <SearchResultsPageContent />
     </Suspense>
   );

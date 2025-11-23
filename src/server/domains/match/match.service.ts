@@ -26,6 +26,26 @@ class MatchService {
   }
 
   /**
+   * 기존 매치 존재 여부 확인 (모든 상태 포함)
+   */
+  async findExistingMatch(
+    recruiterWalletAddress: string,
+    applicantId: string
+  ): Promise<Match | null> {
+    try {
+      const existingMatch = await this.matchRepository.findExistingMatch(
+        recruiterWalletAddress,
+        applicantId
+      );
+
+      return existingMatch;
+    } catch (error) {
+      console.error("❌ Error finding existing match:", error);
+      return null;
+    }
+  }
+
+  /**
    * 매치 생성 (이력서 열람 요청)
    */
   async createMatch(params: CreateMatchParams): Promise<Result<Match>> {

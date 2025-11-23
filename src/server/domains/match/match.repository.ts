@@ -52,6 +52,28 @@ export class MatchRepository {
   }
 
   /**
+   * 기존 매치 존재 여부 확인 (모든 상태 포함)
+   * - 같은 recruiter가 같은 applicant에게 요청한 매치가 있는지 확인 (상태 무관)
+   */
+  async findExistingMatch(
+    recruiterWalletAddress: string,
+    applicantId: string
+  ) {
+    const [existingMatch] = await db
+      .select()
+      .from(matches)
+      .where(
+        and(
+          eq(matches.recruiterWalletAddress, recruiterWalletAddress),
+          eq(matches.applicantId, applicantId)
+        )
+      )
+      .limit(1);
+
+    return existingMatch || null;
+  }
+
+  /**
    * ID로 매치 조회
    */
   async findById(id: string) {

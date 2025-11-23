@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage",
     "test:api": "npx tsx src/server/shared/tests/api-applicants.test.ts",
     "test:api:match": "npx tsx src/server/shared/tests/api-match-profile.test.ts",
+    "test:api:match:post": "npx tsx src/server/shared/tests/api-match-post.test.ts",
     "test:api:curl": "./test-api.sh",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx src/server/db/scripts/migrate.ts",
