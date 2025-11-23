@@ -8,11 +8,7 @@ export function WalrusDownload() {
 	const [policyObjectId, setPolicyObjectId] = useState("");
 	const [encryptionId, setEncryptionId] = useState("");
 
-	const { error, state, handleDownload } = useFileDownload({
-		blobId,
-		policyObjectId,
-		encryptionId
-	});
+	const { error, state, handleDownload } = useFileDownload();
 
 	return (
 		<div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -68,7 +64,7 @@ export function WalrusDownload() {
 
 				{/* Download Button */}
 				<button
-					onClick={handleDownload}
+					onClick={() => handleDownload({ blobId, policyObjectId, encryptionId })}
 					disabled={state !== 'empty' || !blobId || !policyObjectId || !encryptionId}
 					className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors duration-200"
 				>
