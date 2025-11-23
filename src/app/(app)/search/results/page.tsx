@@ -5,7 +5,7 @@ import { customAxios } from "@/clients/shared/libs/axios.libs";
 import { useSearchResultStore } from "@/clients/shared/stores";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -47,6 +47,7 @@ function SearchResultsPageContent() {
     setSelectedApplicant,
     setSelectedApplicantMatchInfo,
   } = useSearchResultStore();
+  const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBlobId, setSelectedBlobId] = useState("");
