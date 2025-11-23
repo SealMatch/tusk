@@ -108,9 +108,17 @@ export default function SearchResultsPage() {
     return [...matched, ...unmatched];
   };
 
-  // similarity 기준 정렬
+  // 중복 제거 + similarity 기준 정렬
   const sortedResults = searchResultCards
-    ? [...searchResultCards].sort((a, b) => b.similarity - a.similarity)
+    ? Object.values(
+        searchResultCards.reduce((acc, item) => {
+          // blobId가 없거나, 기존 항목보다 similarity가 높으면 업데이트
+          if (!acc[item.blobId] || acc[item.blobId].similarity < item.similarity) {
+            acc[item.blobId] = item;
+          }
+          return acc;
+        }, {} as Record<string, SearchResultItem>)
+      ).sort((a, b) => b.similarity - a.similarity)
     : [];
 
   if (isLoading) {
