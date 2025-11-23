@@ -233,26 +233,26 @@ export default function ProfilePage() {
           {/* Tab Buttons */}
           <div className="mb-6 flex gap-4">
             <Button
-              variant={activeTab === "submitted" ? "default" : "outline"}
+              variant="ghost"
               onClick={() => setActiveTab("submitted")}
               className={cn(
-                "flex-1 rounded-xl",
+                "flex-1 rounded-xl transition-all duration-200",
                 activeTab === "submitted"
-                  ? "bg-primary text-primary-foreground"
-                  : "border-white/20 bg-black/20 text-white hover:bg-white/10 hover:text-white"
+                  ? "border-2 border-purple-500/50 bg-purple-500/10 text-white shadow-md shadow-purple-500/20 hover:bg-purple-500/20 hover:border-purple-500/70 hover:text-white"
+                  : "border border-white/10 bg-black/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30"
               )}
             >
               <Send className="w-4 h-4 mr-2" />
               열람 신청한 리스트
             </Button>
             <Button
-              variant={activeTab === "received" ? "default" : "outline"}
+              variant="ghost"
               onClick={() => setActiveTab("received")}
               className={cn(
-                "flex-1 rounded-xl",
+                "flex-1 rounded-xl transition-all duration-200",
                 activeTab === "received"
-                  ? "bg-primary text-primary-foreground"
-                  : "border-white/20 bg-black/20 text-white hover:bg-white/10 hover:text-white"
+                  ? "border-2 border-cyan-500/50 bg-cyan-500/10 text-white shadow-md shadow-cyan-500/20 hover:bg-cyan-500/20 hover:border-cyan-500/70 hover:text-white"
+                  : "border border-white/10 bg-black/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30"
               )}
             >
               <Inbox className="w-4 h-4 mr-2" />
@@ -298,14 +298,19 @@ export default function ProfilePage() {
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Badge
-                              className={cn(
-                                "rounded-full border px-3 py-1 text-xs font-medium capitalize",
-                                getStatusColor(request.status)
-                              )}
-                            >
-                              {request.status}
-                            </Badge>
+                            {!(
+                              activeTab === "received" &&
+                              request.status === "pending"
+                            ) && (
+                              <Badge
+                                className={cn(
+                                  "rounded-full border px-3 py-1 text-xs font-medium capitalize",
+                                  getStatusColor(request.status)
+                                )}
+                              >
+                                {request.status}
+                              </Badge>
+                            )}
                             {activeTab === "received" &&
                               request.status === "pending" && (
                                 <div className="flex gap-2">
