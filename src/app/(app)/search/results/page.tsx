@@ -22,14 +22,14 @@ function SkillStackPreview({
 
   return (
     <div className="h-[44px] mb-3">
-      <p className="text-xs text-gray-400 mb-1.5 font-bold">기술 스택</p>
+      <p className="text-xs text-gray-400 mb-1.5 font-bold">Skill Stack</p>
       <div className="flex items-center gap-1.5 overflow-hidden">
         {displaySkills.map((skill) => (
           <SkillBadge key={skill} skill={skill} className="text-xs shrink-0" />
         ))}
         {remainingCount > 0 && (
           <span className="text-xs text-gray-500 shrink-0 whitespace-nowrap">
-            외 {remainingCount}개
+            {remainingCount} more
           </span>
         )}
       </div>
@@ -141,7 +141,7 @@ function SearchResultsPageContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400">검색 중...</div>
+        <div className="text-gray-400">Searching...</div>
       </div>
     );
   }
@@ -149,7 +149,7 @@ function SearchResultsPageContent() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400">검색 중 오류가 발생했습니다.</div>
+        <div className="text-gray-400">Search error occurred.</div>
       </div>
     );
   }
@@ -160,7 +160,7 @@ function SearchResultsPageContent() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white mb-2">Result</h1>
         <p className="text-sm text-gray-400">
-          총 {sortedResults.length}개의 결과를 찾았습니다
+          Found {sortedResults.length} results
         </p>
       </div>
 
@@ -171,8 +171,7 @@ function SearchResultsPageContent() {
             key={result.applicant.id}
             onClick={() => handleCardClick(result)}
             disabled={!result.applicant.blobId}
-            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed">
             {/* 상단 정보: 핸들 & 유사도 */}
             <div className="flex justify-between items-start mb-2 w-full">
               <span className="text-xs text-gray-400 font-medium truncate max-w-[60%]">
@@ -180,11 +179,11 @@ function SearchResultsPageContent() {
               </span>
               <div className="flex flex-col items-end gap-1">
                 <span className="px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
-                  유사도: {(result.similarity * 100).toFixed(0)}%
+                  Similarity: {(result.similarity * 100).toFixed(0)}%
                 </span>
                 {result.match && (
                   <span className="px-2.5 py-1 bg-green-500/15 text-green-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
-                    요청 여부: {result.match.status}
+                    Request Status: {result.match.status}
                   </span>
                 )}
               </div>
@@ -223,9 +222,9 @@ function SearchResultsPageContent() {
       {sortedResults.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <p className="text-xl font-semibold text-gray-300 mb-2">
-            조건에 맞는 인재가 없어요
+            No matching candidates found
           </p>
-          <p className="text-sm text-gray-500">다른 키워드로 검색해보세요</p>
+          <p className="text-sm text-gray-500">Try a different keyword</p>
         </div>
       )}
 
@@ -246,8 +245,7 @@ export default function SearchResultsPage() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-gray-400">로딩 중...</div>
         </div>
-      }
-    >
+      }>
       <SearchResultsPageContent />
     </Suspense>
   );
