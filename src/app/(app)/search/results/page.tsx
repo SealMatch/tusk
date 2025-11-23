@@ -180,11 +180,11 @@ function SearchResultsPageContent() {
               </span>
               <div className="flex flex-col items-end gap-1">
                 <span className="px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
-                  {(result.similarity * 100).toFixed(0)}%
+                  유사도: {(result.similarity * 100).toFixed(0)}%
                 </span>
                 {result.match && (
                   <span className="px-2.5 py-1 bg-green-500/15 text-green-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
-                    {result.match.status}
+                    요청 여부: {result.match.status}
                   </span>
                 )}
               </div>
