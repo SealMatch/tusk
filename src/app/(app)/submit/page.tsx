@@ -114,7 +114,7 @@ export default function SubmitPage() {
     if (submitSuccess) {
       const timer = setTimeout(() => {
         router.push("/");
-      }, 2000); // 2초 후 이동
+      }, 3000); // 3초 후 이동
 
       return () => clearTimeout(timer);
     }
@@ -476,13 +476,13 @@ export default function SubmitPage() {
                           <CheckCircle2 className="w-12 h-12 text-green-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white">
-                          등록 완료!
+                          Registration Complete!
                         </h3>
                         <p className="text-green-300">
-                          지원이 성공적으로 등록되었습니다.
+                          Your application has been successfully submitted.
                         </p>
                         <p className="text-sm text-green-400/80">
-                          잠시 후 메인 페이지로 이동합니다...
+                          Redirecting to the main page...
                         </p>
                       </div>
                     </div>
