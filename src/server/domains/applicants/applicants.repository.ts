@@ -95,6 +95,24 @@ export class ApplicantsRepository {
   }
 
   /**
+   * 여러 지갑 주소로 지원자 조회
+   * @param walletAddresses 지갑 주소 배열
+   * @returns 지원자 배열
+   */
+  async findByWalletAddresses(walletAddresses: string[]) {
+    if (walletAddresses.length === 0) {
+      return [];
+    }
+
+    const results = await db
+      .select()
+      .from(applicants)
+      .where(inArray(applicants.walletAddress, walletAddresses));
+
+    return results;
+  }
+
+  /**
    * 벡터 유사도 검색
    * pgvector의 cosine distance 연산자(<=>)를 사용하여 유사도 검색
    * @param queryVector 검색 쿼리 벡터 (768차원)

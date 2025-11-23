@@ -1,18 +1,19 @@
+import { SuiTransactionBlockResponse } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 import { fromHEX } from "@mysten/sui/utils";
-import { ACCESS_POLICY_TYPE, ADMIN_CAP_TYPE, PACKAGE_ID, VIEW_REQUEST_TYPE } from "../config/contract.config";
-import { SuiTransactionBlockResponse } from "@mysten/sui/client";
+import {
+  ACCESS_POLICY_TYPE,
+  ADMIN_CAP_TYPE,
+  PACKAGE_ID,
+  VIEW_REQUEST_TYPE,
+} from "../config/contract.config";
 
-export const createAccessPolicyTx = (
-  platformTreasury: string,
-) => {
+export const createAccessPolicyTx = (platformTreasury: string) => {
   const tx = new Transaction();
 
   tx.moveCall({
     target: `${PACKAGE_ID}::access_policy::create`,
-    arguments: [
-      tx.pure.address(platformTreasury),
-    ],
+    arguments: [tx.pure.address(platformTreasury)],
   });
 
   return tx;
@@ -21,7 +22,7 @@ export const createAccessPolicyTx = (
 export const addRecruiterTx = (
   policyId: string,
   adminCapId: string,
-  recruiterAddress: string,
+  recruiterAddress: string
 ) => {
   const tx = new Transaction();
 
@@ -44,7 +45,7 @@ export const sealApproveTx = (policyObjectId: string, encryptionId: string) => {
     target: `${PACKAGE_ID}::access_policy::seal_approve`,
     arguments: [
       tx.pure.vector("u8", fromHEX(encryptionId)),
-      tx.object(policyObjectId)
+      tx.object(policyObjectId),
     ],
   });
 
@@ -53,26 +54,23 @@ export const sealApproveTx = (policyObjectId: string, encryptionId: string) => {
 
 export const createViewRequestTx = (
   policyObjectId: string,
-  accessPrice: string, // MIST
+  accessPrice: string // MIST
 ) => {
   const tx = new Transaction();
   const paymentCoin = tx.splitCoins(tx.gas, [tx.pure.u64(accessPrice)]);
 
   tx.moveCall({
     target: `${PACKAGE_ID}::view_request::create`,
-    arguments: [
-      tx.object(policyObjectId),
-      paymentCoin,
-    ],
+    arguments: [tx.object(policyObjectId), paymentCoin],
   });
 
   return tx;
-}
+};
 
 export const approveViewRequestTx = (
   viewRequestId: string,
   policyObjectId: string,
-  adminCapId: string,
+  adminCapId: string
 ) => {
   const tx = new Transaction();
 
@@ -86,24 +84,21 @@ export const approveViewRequestTx = (
   });
 
   return tx;
-}
+};
 
 export const rejectViewRequestTx = (
   viewRequestId: string,
-  policyObjectId: string,
+  policyObjectId: string
 ) => {
   const tx = new Transaction();
 
   tx.moveCall({
     target: `${PACKAGE_ID}::view_request::reject`,
-    arguments: [
-      tx.object(viewRequestId),
-      tx.object(policyObjectId),
-    ],
+    arguments: [tx.object(viewRequestId), tx.object(policyObjectId)],
   });
 
   return tx;
-}
+};
 
 const getCreatedObjectId = (
   changes: NonNullable<SuiTransactionBlockResponse["objectChanges"]>,
@@ -119,7 +114,9 @@ export const extractAccessPolicyObjectIds = (
   result: SuiTransactionBlockResponse
 ) => {
   if (!result.objectChanges) {
-    throw Error("No object changes found. Did you set showObjectChanges: true?");
+    throw Error(
+      "No object changes found. Did you set showObjectChanges: true?"
+    );
   }
 
   const capId = getCreatedObjectId(result.objectChanges, ADMIN_CAP_TYPE);
@@ -139,7 +136,9 @@ export const extractViewRequestObjectIds = (
   result: SuiTransactionBlockResponse
 ) => {
   if (!result.objectChanges) {
-    throw Error("No object changes found. Did you set showObjectChanges: true?");
+    throw Error(
+      "No object changes found. Did you set showObjectChanges: true?"
+    );
   }
 
   const viewRequestId = getCreatedObjectId(

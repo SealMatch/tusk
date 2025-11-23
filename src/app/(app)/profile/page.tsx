@@ -1,13 +1,15 @@
 "use client";
 
-import { useApproveAccess } from "@/clients/shared/hooks/useApproveAccess";
+import { useApproveAccessProfilePage } from "@/clients/shared/hooks/useApproveAccessProfilePage";
 import { useProfilePageData } from "@/clients/shared/hooks/useProfilePageData";
-import { useRejectAccess } from "@/clients/shared/hooks/useRejectAccess";
+import { useRejectAccessProfilePage } from "@/clients/shared/hooks/useRejectAccessProfilePage";
 import { cn } from "@/clients/shared/libs";
 import { Badge, Button } from "@/clients/shared/ui";
 import { formatAddress } from "@/clients/shared/utils";
 import { getStatusColor } from "@/clients/shared/utils/profile-page.utils";
+import { ProfilePageDataItem } from "@/server/domains/match/match.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   CheckCircle2,
@@ -21,56 +23,26 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-interface AccessRequest {
-  id: string;
-  name: string;
-  timestamp: string;
-  status: "pending" | "approved" | "rejected";
-  type: "submitted" | "received";
-  viewRequestId: string | null;
-  policyObjectId: string | null;
-  adminCapId: string | null;
-}
-
 export default function ProfilePage() {
   const currentAccount = useCurrentAccount();
+  const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"submitted" | "received">(
     "submitted"
   );
-  const { handleApproveAccess } = useApproveAccess();
-  const { handleRejectAccess } = useRejectAccess();
+  const { handleApproveAccess } = useApproveAccessProfilePage();
+  const { handleRejectAccess } = useRejectAccessProfilePage();
 
   const { data, isLoading, error } = useProfilePageData(
     currentAccount?.address ?? ""
   );
 
-  const requestedList: AccessRequest[] = useMemo(() => {
-    if (!data?.requestedList) return [];
-    return data.requestedList.map((item) => ({
-      id: item.match.id,
-      name: item.applicant.handle,
-      timestamp: new Date(item.match.createdAt).toLocaleString(),
-      status: item.match.status as "pending" | "approved" | "rejected",
-      type: "submitted" as const,
-      viewRequestId: item.match.viewRequestId,
-      policyObjectId: item.applicant.sealPolicyId,
-      adminCapId: item.applicant.capId,
-    }));
+  const requestedList: ProfilePageDataItem[] = useMemo(() => {
+    return data?.requestedList ?? [];
   }, [data]);
 
-  const receivedList: AccessRequest[] = useMemo(() => {
-    if (!data?.receivedList) return [];
-    return data.receivedList.map((item) => ({
-      id: item.match.id,
-      name: item.applicant.handle,
-      timestamp: new Date(item.match.createdAt).toLocaleString(),
-      status: item.match.status as "pending" | "approved" | "rejected",
-      type: "received" as const,
-      viewRequestId: item.match.viewRequestId,
-      policyObjectId: item.applicant.sealPolicyId,
-      adminCapId: item.applicant.capId,
-    }));
+  const receivedList: ProfilePageDataItem[] = useMemo(() => {
+    return data?.receivedList ?? [];
   }, [data]);
 
   const timeText = useMemo(() => {
@@ -92,38 +64,61 @@ export default function ProfilePage() {
     }
   };
 
-  const onApprove = async (request: AccessRequest) => {
+  const onApprove = async (request: ProfilePageDataItem) => {
     if (
-      !request.viewRequestId ||
-      !request.policyObjectId ||
-      !request.adminCapId
+      !request.match.viewRequestId ||
+      !request.applicant.sealPolicyId ||
+      !request.applicant.capId ||
+      !request.match.id ||
+      !request.match.recruiterWalletAddress ||
+      !request.applicant.id
     ) {
       console.error("Missing required IDs for approval");
       return;
     }
     try {
       await handleApproveAccess({
-        viewRequestId: request.viewRequestId,
-        policyObjectId: request.policyObjectId,
-        adminCapId: request.adminCapId,
+        viewRequestId: request.match.viewRequestId,
+        policyObjectId: request.applicant.sealPolicyId,
+        adminCapId: request.applicant.capId,
+        matchId: request.match.id,
+        recruiterWalletAddress: request.match.recruiterWalletAddress,
+        applicantId: request.applicant.id,
       });
-      // Optionally refetch data or update UI
+
+      // 캐시 무효화 → 자동 refetch
+      await queryClient.invalidateQueries({
+        queryKey: ["profile-page-data", currentAccount?.address],
+      });
     } catch (error) {
       console.error("Failed to approve access:", error);
     }
   };
 
-  const onReject = async (request: AccessRequest) => {
-    if (!request.viewRequestId || !request.policyObjectId) {
+  const onReject = async (request: ProfilePageDataItem) => {
+    if (
+      !request.match.viewRequestId ||
+      !request.applicant.sealPolicyId ||
+      !request.match.id ||
+      !request.match.recruiterWalletAddress ||
+      !request.applicant.id
+    ) {
       console.error("Missing required IDs for rejection");
       return;
     }
     try {
       await handleRejectAccess({
-        viewRequestId: request.viewRequestId,
-        policyObjectId: request.policyObjectId,
+        viewRequestId: request.match.viewRequestId,
+        policyObjectId: request.applicant.sealPolicyId,
+        matchId: request.match.id,
+        recruiterWalletAddress: request.match.recruiterWalletAddress,
+        applicantId: request.applicant.id,
       });
-      // Optionally refetch data or update UI
+
+      // 캐시 무효화 → 자동 refetch
+      await queryClient.invalidateQueries({
+        queryKey: ["profile-page-data", currentAccount?.address],
+      });
     } catch (error) {
       console.error("Failed to reject access:", error);
     }
@@ -283,36 +278,38 @@ export default function ProfilePage() {
               </div>
             ) : (
               (activeTab === "submitted" ? requestedList : receivedList).map(
-                (request) => (
-                  <div key={request.id}>
+                (request: ProfilePageDataItem) => (
+                  <div key={request.match.id}>
                     <div className="overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-xl transition-all hover:border-white/30">
                       <div className="p-6">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex-1">
                             <h3 className="mb-1 text-lg font-semibold text-white">
-                              {request.name}
+                              {request.applicant.handle}
                             </h3>
 
                             <p className="text-xs text-gray-500">
-                              {request.timestamp}
+                              {new Date(
+                                request.match.createdAt
+                              ).toLocaleString()}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
                             {!(
                               activeTab === "received" &&
-                              request.status === "pending"
+                              request.match.status === "pending"
                             ) && (
                               <Badge
                                 className={cn(
                                   "rounded-full border px-3 py-1 text-xs font-medium capitalize",
-                                  getStatusColor(request.status)
+                                  getStatusColor(request.match.status)
                                 )}
                               >
-                                {request.status}
+                                {request.match.status}
                               </Badge>
                             )}
                             {activeTab === "received" &&
-                              request.status === "pending" && (
+                              request.match.status === "pending" && (
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
