@@ -22,7 +22,7 @@ export type DownloadState =
 	| 'decrypting'
 	| 'done';
 
-export const useFileDownload = ({ blobId, policyObjectId, encryptionId }: FileDownloadParam) => {
+export const useFileDownload = () => {
 	const currentAccount = useCurrentAccount();
 	const suiClient = useSuiClient() as SuiClient & { walrus: WalrusClient };
 	const sealClient = useMemo(() => createSealClient(suiClient), [suiClient]);
@@ -30,9 +30,10 @@ export const useFileDownload = ({ blobId, policyObjectId, encryptionId }: FileDo
 
 	const [error, setError] = useState<string | null>(null);
 	const [state, setState] = useState<DownloadState>('empty');
+	const [isDownloading, setIsDownloading] = useState(false);
 
 
-	const handleDownload = async () => {
+	const handleDownload = async ({ blobId, policyObjectId, encryptionId }: FileDownloadParam) => {
 		if (!currentAccount) {
 			setError("No account connected");
 			return;
@@ -46,18 +47,27 @@ export const useFileDownload = ({ blobId, policyObjectId, encryptionId }: FileDo
 		try {
 			setError(null);
 
+			setIsDownloading(true);
+
 			const encryptedData = await downloadBlobFromWalrus(blobId);
 			const sessionKey = await createAndSignSessionKey(currentAccount.address);
 			const decryptedData = await decryptBlob(encryptedData, sessionKey, policyObjectId, encryptionId);
 
 			setState('done');
 
-			downloadFile(decryptedData);
+			downloadFile(decryptedData, blobId);
+
+			// Reset state after download completes
+			setTimeout(() => {
+				setState('empty');
+				setIsDownloading(false);
+			}, 1000);
 
 		} catch (err) {
 			console.error('Download/decrypt failed:', err);
 			setError(err instanceof Error ? err.message : String(err));
 			setState('empty');
+			setIsDownloading(false);
 		}
 	}
 
@@ -121,12 +131,12 @@ export const useFileDownload = ({ blobId, policyObjectId, encryptionId }: FileDo
 		return decryptedData;
 	}
 
-	const downloadFile = (data: Uint8Array) => {
+	const downloadFile = (data: Uint8Array, blobId: string) => {
 		const blob = new Blob([data as BlobPart]);
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = 'decrypted-file';
+		a.download = `resume-${blobId}.pdf`;
 		a.click();
 		URL.revokeObjectURL(url);
 	}
@@ -134,6 +144,7 @@ export const useFileDownload = ({ blobId, policyObjectId, encryptionId }: FileDo
 	return {
 		error,
 		state,
-		handleDownload
+		handleDownload,
+		isDownloading
 	}
 }
