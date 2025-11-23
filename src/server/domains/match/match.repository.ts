@@ -18,6 +18,7 @@ export class MatchRepository {
         id: data.id,
         recruiterWalletAddress: data.recruiterWalletAddress,
         applicantId: data.applicantId,
+        viewRequestId: data.viewRequestId,
         status: data.status,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,

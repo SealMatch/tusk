@@ -9,6 +9,7 @@ export const matches = pgTable(
     applicantId: uuid("applicant_id")
       .notNull()
       .references(() => applicants.id),
+    viewRequestId: text("view_request_id"),
     status: text("status").notNull().default("pending"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

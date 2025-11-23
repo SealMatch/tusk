@@ -1,12 +1,14 @@
 "use client";
 
-import { SkillBadge } from "@/clients/shared/components";
+import { ResumeDetailModal, SkillBadge } from "@/clients/shared/components";
 import { customAxios } from "@/clients/shared/libs/axios.libs";
+import { useSelectedApplicantStore } from "@/clients/shared/stores";
 import { SearchResultItem } from "@/server/domains/applicants/applicants.type";
+import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 function SkillStackPreview({
   skills,
@@ -36,12 +38,14 @@ function SkillStackPreview({
   );
 }
 
-export default function SearchResultsPage() {
+function SearchResultsPageContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
   const queryClient = useQueryClient();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBlobId, setSelectedBlobId] = useState("");
 
   const {
     data: searchResultCards,
@@ -60,9 +64,9 @@ export default function SearchResultsPage() {
           "X-Wallet-Address": recruiterWalletAddress,
         },
       });
-      return response.data.data.results as SearchResultItem[];
+      return response.data.data.results as SearchResultCard[];
     },
-    enabled: !!query && !!recruiterWalletAddress,
+    enabled: !!query,
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
   });
 
@@ -75,8 +79,13 @@ export default function SearchResultsPage() {
     }
   }, [isSuccess, recruiterWalletAddress, queryClient]);
 
-  const handleCardClick = (blobId: string) => {
-    router.push(`/resume/${blobId}`);
+  const { setSelectedApplicant } = useSelectedApplicantStore();
+
+  const handleCardClick = (applicant: SearchResultItem) => {
+    if (!applicant.blobId) return;
+    setSelectedApplicant(applicant);
+    setSelectedBlobId(applicant.blobId);
+    setIsModalOpen(true);
   };
 
   // 검색 키워드와 매칭되는 스킬을 앞으로 정렬
@@ -108,9 +117,18 @@ export default function SearchResultsPage() {
     return [...matched, ...unmatched];
   };
 
-  // similarity 기준 정렬
+  // 중복 제거 + similarity 기준 정렬
   const sortedResults = searchResultCards
-    ? [...searchResultCards].sort((a, b) => b.similarity - a.similarity)
+    ? Object.values(
+        searchResultCards.reduce((acc, item) => {
+          const blobId = item.applicant.blobId || item.applicant.id;
+          // blobId가 없거나, 기존 항목보다 similarity가 높으면 업데이트
+          if (!acc[blobId] || acc[blobId].similarity < item.similarity) {
+            acc[blobId] = item;
+          }
+          return acc;
+        }, {} as Record<string, SearchResultCard>)
+      ).sort((a, b) => b.similarity - a.similarity)
     : [];
 
   if (isLoading) {
@@ -143,32 +161,52 @@ export default function SearchResultsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedResults.map((result) => (
           <button
-            key={result.blobId}
-            onClick={() => handleCardClick(result.blobId)}
-            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[200px]"
+            key={result.applicant.id}
+            onClick={() => handleCardClick({ ...result.applicant, similarity: result.similarity })}
+            disabled={!result.applicant.blobId}
+            className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {/* 직무 - 고정 높이 */}
-            <div className="mb-1">
-              <p className="text-white font-semibold text-base truncate text-left mb-1">
-                {result.position}
-              </p>
-              <div className="flex justify-end">
-                <span className="absolute top-4 right-4 px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-semibold rounded-md">
+            {/* 상단 정보: 핸들 & 유사도 */}
+            <div className="flex justify-between items-start mb-2 w-full">
+              <span className="text-xs text-gray-400 font-medium truncate max-w-[60%]">
+                @{result.applicant.handle}
+              </span>
+              <div className="flex flex-col items-end gap-1">
+                <span className="px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
                   {(result.similarity * 100).toFixed(0)}%
                 </span>
+                {result.match && (
+                  <span className="px-2.5 py-1 bg-green-500/15 text-green-400 text-[11px] font-semibold rounded-md whitespace-nowrap">
+                    {result.match.status}
+                  </span>
+                )}
               </div>
             </div>
 
+            {/* 직무 */}
+            <div className="mb-1 w-full">
+              <p className="text-white font-semibold text-base truncate pr-2">
+                {result.applicant.position || "Unknown Position"}
+              </p>
+            </div>
+
+            {/* 가격 정보 */}
+            <div className="mb-2">
+              <span className="text-xs text-gray-500">
+                Access: {result.applicant.accessPrice ?? 0} WAL
+              </span>
+            </div>
+
             {/* 구분선 */}
-            <div className="border-t border-gray-700 my-3" />
+            <div className="border-t border-gray-700 my-2" />
 
             <SkillStackPreview
-              skills={result.techStack}
+              skills={result.applicant.techStack || []}
               getSortedSkills={getSortedSkills}
             />
 
             <p className="text-sm text-gray-400 line-clamp-2 max-h-10">
-              {result.aiSummary}
+              {result.applicant.aiSummary || "No summary available"}
             </p>
           </button>
         ))}
@@ -183,6 +221,25 @@ export default function SearchResultsPage() {
           <p className="text-sm text-gray-500">다른 키워드로 검색해보세요</p>
         </div>
       )}
+
+      {/* Resume Detail Modal */}
+      <ResumeDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        blobId={selectedBlobId}
+      />
     </div>
+  );
+}
+
+export default function SearchResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-gray-400">로딩 중...</div>
+      </div>
+    }>
+      <SearchResultsPageContent />
+    </Suspense>
   );
 }

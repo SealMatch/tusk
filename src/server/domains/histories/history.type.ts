@@ -1,5 +1,5 @@
 import { Match } from "@/server/db/schema/matches.schema";
-import { Applicant } from "../applicants/applicants.type";
+import { Applicant, PublicApplicant } from "../applicants/applicants.type";
 
 /**
  * Repository layer parameter - for DB storage
@@ -19,10 +19,11 @@ export interface SearchResultItem {
   applicantId: string;
   similarity: number;
   createdAt: Date;
+  snapshot: PublicApplicant;
 }
 
 export interface SearchResultCard {
-  applicant: Applicant;
+  applicant: PublicApplicant;
   match: Match | null;
   similarity: number;
   createdAt: Date;

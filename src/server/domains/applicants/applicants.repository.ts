@@ -25,6 +25,7 @@ export class ApplicantsRepository {
         techStack: data.techStack,
         aiSummary: data.aiSummary,
         blobId: data.blobId || "",
+        capId: data.capId || "",
         sealPolicyId: data.sealPolicyId || "",
         encryptionId: data.encryptionId || "",
         accessPrice: data.accessPrice || 0,
@@ -57,6 +58,19 @@ export class ApplicantsRepository {
       .select()
       .from(applicants)
       .where(eq(applicants.id, id))
+      .limit(1);
+
+    return applicant || null;
+  }
+
+  /**
+   * handle로 지원자 조회
+   */
+  async findByHandle(handle: string): Promise<Applicant | null> {
+    const [applicant] = await db
+      .select()
+      .from(applicants)
+      .where(eq(applicants.handle, handle))
       .limit(1);
 
     return applicant || null;
@@ -98,14 +112,20 @@ export class ApplicantsRepository {
       SELECT
         id,
         handle,
+        wallet_address as "walletAddress",
         position,
         tech_stack as "techStack",
+        introduction,
         ai_summary as "aiSummary",
         blob_id as "blobId",
+        cap_id as "capId",
         seal_policy_id as "sealPolicyId",
         encryption_id as "encryptionId",
         access_price as "accessPrice",
+        access_list as "accessList",
+        is_job_seeking as "isJobSeeking",
         created_at as "createdAt",
+        updated_at as "updatedAt",
         1 - (embedding <=> ${vectorString}::vector) as similarity
       FROM applicants
       WHERE is_job_seeking = true

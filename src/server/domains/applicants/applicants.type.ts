@@ -1,3 +1,8 @@
+import { Applicant } from "@/server/db/schema/applicants.schema";
+
+// Re-export Applicant from schema
+export type { Applicant };
+
 /**
  * 지원자 생성 요청 파라미터
  */
@@ -10,6 +15,7 @@ export interface CreateApplicantParams {
   blobId?: string;
   sealPolicyId?: string;
   encryptionId?: string;
+  capId?: string;
   accessPrice?: number;
   isJobSeeking?: boolean;
 }
@@ -20,6 +26,11 @@ export interface CreateApplicantParams {
 export interface CreateApplicantData extends CreateApplicantParams {
   embedding: number[];
 }
+
+/**
+ * 공개용 지원자 정보 (임베딩 제외)
+ */
+export type PublicApplicant = Omit<Applicant, "embedding">;
 
 /**
  * 지원자 생성 결과
@@ -39,18 +50,8 @@ export interface SearchApplicantsParams {
 /**
  * 검색 결과 아이템
  */
-export interface SearchResultItem {
-  id: string;
-  handle: string;
-  position: string;
-  techStack: string[];
-  aiSummary: string;
-  blobId: string;
-  sealPolicyId: string;
-  encryptionId: string;
-  accessPrice: number;
+export interface SearchResultItem extends PublicApplicant {
   similarity: number;
-  createdAt: Date;
 }
 
 /**

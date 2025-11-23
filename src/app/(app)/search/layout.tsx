@@ -18,8 +18,12 @@ export default function SearchLayout({
   const { data: searchHistory, deleteSearchHistory } = useSearchHistory();
   const { setResults } = useHistoryStore();
 
-  const handleHistoryClick = (query: string, results: SearchResultItem[]) => {
-    const params = new URLSearchParams({ query });
+  const handleHistoryClick = (
+    historyId: string,
+    query: string,
+    results: SearchResultItem[]
+  ) => {
+    const params = new URLSearchParams({ query, historyId });
     setResults(results);
     router.push(`/search/history?${params.toString()}`);
   };
@@ -56,7 +60,9 @@ export default function SearchLayout({
                   className="group flex items-center gap-2 rounded-md hover:bg-gray-800 cursor-pointer"
                 >
                   <button
-                    onClick={() => handleHistoryClick(item.query, item.results)}
+                    onClick={() =>
+                      handleHistoryClick(item.id, item.query, item.results)
+                    }
                     className="flex-1 text-left px-3 py-2 text-sm text-gray-300 truncate cursor-pointer"
                   >
                     {item.query}

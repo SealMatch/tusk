@@ -12,4 +12,5 @@ export {
 } from "./form";
 export { Input } from "./input";
 export { Label } from "./label";
+export { ProgressBar } from "./progress-bar";
 export { Textarea } from "./textarea";

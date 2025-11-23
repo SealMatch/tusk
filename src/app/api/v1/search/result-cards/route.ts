@@ -1,21 +1,11 @@
+import { applicantsService } from "@/server/domains/applicants";
+import { PublicApplicant } from "@/server/domains/applicants/applicants.type";
 import { historyService } from "@/server/domains/histories/history.service";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { Result } from "@/server/shared/types/result.type";
 import { NextRequest, NextResponse } from "next/server";
 
-/**
- * Request body schema
- */
-interface SearchResultCardsBody {
-  historyId: string;
-  query: string;
-  results: Array<{
-    applicantId: string;
-    similarity: number;
-    createdAt: string; // ISO 8601 string
-  }>;
-  recruiterWalletAddress: string;
-}
+
 
 /**
  * @openapi
@@ -109,98 +99,76 @@ interface SearchResultCardsBody {
  *                   type: string
  *                   example: "Internal server error"
  */
-export async function POST(
+export async function GET(
   request: NextRequest
 ): Promise<NextResponse<Result<SearchResultCard[]>>> {
   try {
-    // 1. Parse request body
-    const body: SearchResultCardsBody = await request.json();
+    // 1. Extract parameters
+    const searchParams = request.nextUrl.searchParams;
+    const historyId = searchParams.get("historyId");
+    const recruiterWalletAddress = request.headers.get("x-wallet-address");
 
     // 2. Validation
-    if (!body.recruiterWalletAddress) {
+    if (!historyId) {
       return NextResponse.json(
         {
           success: false,
-          errorMessage: "recruiterWalletAddress is required",
+          errorMessage: "historyId is required",
         },
         { status: 400 }
       );
     }
 
-    if (!body.recruiterWalletAddress.startsWith("0x")) {
+    if (!recruiterWalletAddress) {
       return NextResponse.json(
         {
           success: false,
-          errorMessage: "Invalid wallet address format",
+          errorMessage: "recruiterWalletAddress is required (x-wallet-address header)",
         },
         { status: 400 }
       );
     }
 
-    if (!body.query || typeof body.query !== "string") {
+    // 3. Fetch history
+    const historyResult = await historyService.getHistoryById(historyId);
+
+    if (!historyResult.success) {
       return NextResponse.json(
         {
           success: false,
-          errorMessage: "query is required and must be a string",
+          errorMessage: historyResult.errorMessage || "History not found",
         },
-        { status: 400 }
+        { status: 404 }
       );
     }
 
-    if (!Array.isArray(body.results)) {
+    if (!historyResult.data) {
       return NextResponse.json(
         {
           success: false,
-          errorMessage: "results must be an array",
+          errorMessage: "History data is missing",
         },
-        { status: 400 }
+        { status: 404 }
       );
     }
 
-    // Validate results array structure
-    for (const item of body.results) {
-      if (!item.applicantId || typeof item.applicantId !== "string") {
-        return NextResponse.json(
-          {
-            success: false,
-            errorMessage: "Each result item must have a valid applicantId",
-          },
-          { status: 400 }
-        );
-      }
+    const history = historyResult.data;
 
-      if (typeof item.similarity !== "number") {
-        return NextResponse.json(
-          {
-            success: false,
-            errorMessage: "Each result item must have a valid similarity score",
-          },
-          { status: 400 }
-        );
-      }
-
-      if (!item.createdAt || typeof item.createdAt !== "string") {
-        return NextResponse.json(
-          {
-            success: false,
-            errorMessage: "Each result item must have a valid createdAt",
-          },
-          { status: 400 }
-        );
-      }
+    // 4. Verify ownership
+    if (history.recruiterWalletAddress !== recruiterWalletAddress) {
+      return NextResponse.json(
+        {
+          success: false,
+          errorMessage: "Unauthorized: You can only view your own history",
+        },
+        { status: 403 }
+      );
     }
 
-    // 3. Convert results to SearchResultItem format
-    const searchResultItems = body.results.map((item) => ({
-      applicantId: item.applicantId,
-      similarity: item.similarity,
-      createdAt: new Date(item.createdAt),
-    }));
-
-    // 4. Service call
+    // 5. Get result cards
     const result = await historyService.getSearchResultCards(
-      body.recruiterWalletAddress,
-      searchResultItems
+      recruiterWalletAddress,
+      history.results
     );
 
     if (!result.success) {
@@ -213,7 +181,7 @@ export async function POST(
       );
     }
 
-    // 5. Return result cards
+    // 6. Return result cards
     return NextResponse.json(
       {
         success: true,
@@ -222,7 +190,7 @@ export async function POST(
       { status: 200 }
     );
   } catch (error) {
-    console.error("❌ Error in POST /api/v1/search/result-cards:", error);
+    console.error("❌ Error in GET /api/v1/search/result-cards:", error);
 
     return NextResponse.json(
       {

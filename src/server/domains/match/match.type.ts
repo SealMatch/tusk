@@ -12,6 +12,7 @@ export type MatchStatus = "pending" | "approved" | "rejected";
 export interface CreateMatchParams {
   recruiterWalletAddress: string;
   applicantId: string;
+  viewRequestId: string; // 온체인 접근 요청 ID (필수)
 }
 
 /**
@@ -21,6 +22,7 @@ export interface CreateMatchData {
   id: string;
   recruiterWalletAddress: string;
   applicantId: string;
+  viewRequestId: string; // 온체인 접근 요청 ID (필수)
   status: MatchStatus;
   createdAt: Date;
   updatedAt: Date;

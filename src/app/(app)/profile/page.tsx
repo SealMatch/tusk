@@ -1,9 +1,11 @@
 "use client";
 
+import { useApproveAccess } from "@/clients/shared/hooks/useApproveAccess";
 import { useProfilePageData } from "@/clients/shared/hooks/useProfilePageData";
+import { useRejectAccess } from "@/clients/shared/hooks/useRejectAccess";
 import { cn } from "@/clients/shared/libs";
 import { Badge, Button } from "@/clients/shared/ui";
-import { formatAddress, testWalletAddress } from "@/clients/shared/utils";
+import { formatAddress } from "@/clients/shared/utils";
 import { getStatusColor } from "@/clients/shared/utils/profile-page.utils";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import {
@@ -25,6 +27,9 @@ interface AccessRequest {
   timestamp: string;
   status: "pending" | "approved" | "rejected";
   type: "submitted" | "received";
+  viewRequestId: string | null;
+  policyObjectId: string | null;
+  adminCapId: string | null;
 }
 
 export default function ProfilePage() {
@@ -33,9 +38,11 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"submitted" | "received">(
     "submitted"
   );
+  const { handleApproveAccess } = useApproveAccess();
+  const { handleRejectAccess } = useRejectAccess();
 
   const { data, isLoading, error } = useProfilePageData(
-    testWalletAddress ? testWalletAddress : currentAccount?.address ?? ""
+    currentAccount?.address ?? ""
   );
 
   const requestedList: AccessRequest[] = useMemo(() => {
@@ -46,6 +53,9 @@ export default function ProfilePage() {
       timestamp: new Date(item.match.createdAt).toLocaleString(),
       status: item.match.status as "pending" | "approved" | "rejected",
       type: "submitted" as const,
+      viewRequestId: item.match.viewRequestId,
+      policyObjectId: item.applicant.sealPolicyId,
+      adminCapId: item.applicant.capId,
     }));
   }, [data]);
 
@@ -57,6 +67,9 @@ export default function ProfilePage() {
       timestamp: new Date(item.match.createdAt).toLocaleString(),
       status: item.match.status as "pending" | "approved" | "rejected",
       type: "received" as const,
+      viewRequestId: item.match.viewRequestId,
+      policyObjectId: item.applicant.sealPolicyId,
+      adminCapId: item.applicant.capId,
     }));
   }, [data]);
 
@@ -76,6 +89,43 @@ export default function ProfilePage() {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch {}
+    }
+  };
+
+  const onApprove = async (request: AccessRequest) => {
+    if (
+      !request.viewRequestId ||
+      !request.policyObjectId ||
+      !request.adminCapId
+    ) {
+      console.error("Missing required IDs for approval");
+      return;
+    }
+    try {
+      await handleApproveAccess({
+        viewRequestId: request.viewRequestId,
+        policyObjectId: request.policyObjectId,
+        adminCapId: request.adminCapId,
+      });
+      // Optionally refetch data or update UI
+    } catch (error) {
+      console.error("Failed to approve access:", error);
+    }
+  };
+
+  const onReject = async (request: AccessRequest) => {
+    if (!request.viewRequestId || !request.policyObjectId) {
+      console.error("Missing required IDs for rejection");
+      return;
+    }
+    try {
+      await handleRejectAccess({
+        viewRequestId: request.viewRequestId,
+        policyObjectId: request.policyObjectId,
+      });
+      // Optionally refetch data or update UI
+    } catch (error) {
+      console.error("Failed to reject access:", error);
     }
   };
 
@@ -262,6 +312,7 @@ export default function ProfilePage() {
                                   <Button
                                     size="sm"
                                     className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
+                                    onClick={() => onApprove(request)}
                                   >
                                     <CheckCircle2 className="w-4 h-4 mr-1" />
                                     승인
@@ -269,6 +320,7 @@ export default function ProfilePage() {
                                   <Button
                                     size="sm"
                                     className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                                    onClick={() => onReject(request)}
                                   >
                                     <XCircle className="w-4 h-4 mr-1" />
                                     거절

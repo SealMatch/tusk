@@ -5,7 +5,8 @@ export type {
 } from "./pdf-download.utils";
 export { formatAddress } from "./wallet.utils";
 
-export const testWalletAddress =
-  process.env.VERCEL_ENV === "development"
-    ? process.env.NEXT_PUBLIC_TEST_WALLET_ADDRESS
-    : "";
+// export const testWalletAddress =
+//   process.env.VERCEL_ENV === "development"
+//     ? process.env.NEXT_PUBLIC_TEST_WALLET_ADDRESS
+//     : "";
+ㄴ;
