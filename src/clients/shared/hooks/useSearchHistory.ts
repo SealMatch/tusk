@@ -56,13 +56,25 @@ export const useSearchHistory = () => {
     return response.data.data;
   };
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["search-history", recruiterWalletAddress],
     queryFn: getSearchHistory,
     enabled: !!recruiterWalletAddress,
+    staleTime: 0,
   });
 
-  console.log(data);
+  const invalidateHistory = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["search-history", recruiterWalletAddress],
+    });
+  };
 
-  return { data, isLoading, error, deleteSearchHistory };
+  return {
+    data,
+    isLoading,
+    error,
+    deleteSearchHistory,
+    refetch,
+    invalidateHistory,
+  };
 };
