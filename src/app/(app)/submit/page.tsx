@@ -279,7 +279,7 @@ export default function SubmitPage() {
             <Sparkles className="w-4 h-4 text-purple-400" />
             <span className="text-sm text-purple-300 font-medium">Join Our Talent Network</span>
           </div>
-          <h1 className="mb-4 text-5xl sm:text-6xl font-bold tracking-tight bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
+          <h1 className="mb-4 text-5xl sm:text-6xl font-bold tracking-tight leading-relaxed bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
             Start as a job seeker!
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
