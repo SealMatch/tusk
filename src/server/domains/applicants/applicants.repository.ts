@@ -64,6 +64,19 @@ export class ApplicantsRepository {
   }
 
   /**
+   * handle로 지원자 조회
+   */
+  async findByHandle(handle: string): Promise<Applicant | null> {
+    const [applicant] = await db
+      .select()
+      .from(applicants)
+      .where(eq(applicants.handle, handle))
+      .limit(1);
+
+    return applicant || null;
+  }
+
+  /**
    * 여러 ID로 지원자 조회
    * @param ids 지원자 ID 배열
    * @returns 지원자 배열

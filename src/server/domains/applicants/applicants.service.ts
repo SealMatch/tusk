@@ -196,6 +196,37 @@ class ApplicantsService {
       };
     }
   }
+
+  /**
+   * handle 중복 확인
+   * @param handle 확인할 handle
+   * @returns true: 이미 존재 (중복), false: 사용 가능
+   */
+  async handleCheck(handle: string): Promise<Result<boolean>> {
+    try {
+      const existingApplicant =
+        await this.applicantsRepository.findByHandle(handle);
+
+      return {
+        success: true,
+        data: existingApplicant !== null,
+      };
+    } catch (error) {
+      console.error("❌ Error in handleCheck service:", error);
+
+      if (error instanceof Error) {
+        return {
+          success: false,
+          errorMessage: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        errorMessage: "Unknown error occurred",
+      };
+    }
+  }
 }
 
 export const applicantsService = new ApplicantsService();

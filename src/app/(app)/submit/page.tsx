@@ -1,25 +1,32 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Button } from "@/clients/shared/ui";
-import { Upload, Loader2, CheckCircle2, Briefcase, Code2, Sparkles } from "lucide-react";
-import { useFileUpload, UploadState } from "@/clients/shared/hooks/useFileUpload";
+import {
+  UploadState,
+  useFileUpload,
+} from "@/clients/shared/hooks/useFileUpload";
 import { useSubmitApplicant } from "@/clients/shared/hooks/useSubmitApplicant";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { Button } from "@/clients/shared/ui";
 import { formatDate, formatFileSize } from "@/clients/shared/utils/file.utils";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import {
+  Briefcase,
+  CheckCircle2,
+  Code2,
+  Loader2,
+  Sparkles,
+  Upload,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function SubmitPage() {
   const [handle, setHandle] = useState("");
+  const [handleCheckStatus, setHandleCheckStatus] = useState<
+    "idle" | "checking" | "available" | "duplicate"
+  >("idle");
   const currentAccount = useCurrentAccount();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const {
-    file,
-    error,
-    uploadResult,
-    state,
-    handleFileChange,
-    handleSubmit
-  } = useFileUpload();
+  const { file, error, uploadResult, state, handleFileChange, handleSubmit } =
+    useFileUpload();
 
   const {
     submitApplicantAsync,
@@ -38,9 +45,50 @@ export default function SubmitPage() {
     fileInputRef.current?.click();
   };
 
+  const handleDuplicateCheck = async (handle: string) => {
+    if (!handle.trim()) {
+      setHandleCheckStatus("idle");
+      return;
+    }
+
+    try {
+      setHandleCheckStatus("checking");
+      const response = await fetch(`/api/v1/handle-check?handle=${handle}`);
+      const result = await response.json();
+
+      // data: true = 중복, data: false = 사용 가능
+      if (result.success && !result.data) {
+        setHandleCheckStatus("available");
+      } else {
+        setHandleCheckStatus("duplicate");
+      }
+    } catch (error) {
+      console.error("핸들 중복 체크 오류:", error);
+      setHandleCheckStatus("duplicate");
+    }
+  };
+
+  // 1초 debounce로 자동 중복 체크
+  useEffect(() => {
+    if (!handle.trim()) {
+      setHandleCheckStatus("idle");
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleDuplicateCheck(handle);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [handle]);
+
   const [isAnalyzingPdf, setIsAnalyzingPdf] = useState(false);
   const [analyzingError, setAnalyzingError] = useState<string | null>(null);
-  const [analyzingResult, setAnalyzingResult] = useState<{ position: string; techStack: string[]; aiSummary: string } | null>(null);
+  const [analyzingResult, setAnalyzingResult] = useState<{
+    position: string;
+    techStack: string[];
+    aiSummary: string;
+  } | null>(null);
 
   const handleSupplyClick = async () => {
     // Reset submit states
@@ -48,12 +96,12 @@ export default function SubmitPage() {
     setAnalyzingError(null);
 
     // 1. 먼저 파일 업로드 (아직 업로드되지 않았다면)
-    if (state !== 'done') {
+    if (state !== "done") {
       await handleSubmit();
     }
 
     // 2. 업로드가 완료되지 않았으면 에러 처리
-    if (state !== 'done' || !uploadResult) {
+    if (state !== "done" || !uploadResult) {
       // 에러는 useFileUpload의 error state에서 처리됨
       return;
     }
@@ -64,30 +112,37 @@ export default function SubmitPage() {
     }
 
     // 4. PDF 분석 API 호출
-    let summaryData: { position: string; techStack: string[]; aiSummary: string } | null = null;
+    let summaryData: {
+      position: string;
+      techStack: string[];
+      aiSummary: string;
+    } | null = null;
     try {
       setIsAnalyzingPdf(true);
 
       const formData = new FormData();
-      formData.append('pdf', file);
+      formData.append("pdf", file);
 
-      const response = await fetch('/api/v1/summary', {
-        method: 'POST',
+      const response = await fetch("/api/v1/summary", {
+        method: "POST",
         body: formData,
       });
 
       const result = await response.json();
-      console.log('PDF 분석 결과:', result);
+      console.log("PDF 분석 결과:", result);
 
       if (!result.success) {
-        throw new Error(result.errorMessage || 'PDF 분석에 실패했습니다.');
+        throw new Error(result.errorMessage || "PDF 분석에 실패했습니다.");
       }
 
       summaryData = result.data;
       setAnalyzingResult(summaryData);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'PDF 분석 중 오류가 발생했습니다.';
-      console.error('PDF 분석 중 오류:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "PDF 분석 중 오류가 발생했습니다.";
+      console.error("PDF 분석 중 오류:", error);
       setAnalyzingError(errorMessage);
       setIsAnalyzingPdf(false);
       setAnalyzingResult(null);
@@ -98,7 +153,7 @@ export default function SubmitPage() {
 
     // 5. summaryData 확인
     if (!summaryData) {
-      setAnalyzingError('PDF 분석 결과를 받지 못했습니다.');
+      setAnalyzingError("PDF 분석 결과를 받지 못했습니다.");
       return;
     }
 
@@ -122,12 +177,14 @@ export default function SubmitPage() {
       // setHandle("");
     } catch (error) {
       // 에러는 useMutation에서 자동으로 처리됨
-      console.error('지원자 등록 중 오류:', error);
+      console.error("지원자 등록 중 오류:", error);
     }
   };
 
   // 업로드 상태 정보
-  const getUploadStateInfo = (currentState: UploadState): { label: string; progress: number } => {
+  const getUploadStateInfo = (
+    currentState: UploadState
+  ): { label: string; progress: number } => {
     const stateMap: Record<UploadState, { label: string; progress: number }> = {
       empty: { label: "대기 중", progress: 0 },
       encrypting: { label: "파일 암호화 중...", progress: 15 },
@@ -142,7 +199,7 @@ export default function SubmitPage() {
     return stateMap[currentState];
   };
 
-  const isUploading = state !== 'empty' && state !== 'done';
+  const isUploading = state !== "empty" && state !== "done";
   const uploadStateInfo = getUploadStateInfo(state);
 
   return (
@@ -157,7 +214,9 @@ export default function SubmitPage() {
           {/* Form Container */}
           <div className="overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl">
             <div className="p-6 sm:p-8">
-              <h2 className="mb-6 text-2xl font-semibold text-white">Apply Form</h2>
+              <h2 className="mb-6 text-2xl font-semibold text-white">
+                Apply Form
+              </h2>
 
               <div className="space-y-6">
                 {/* 1. PDF 파일 업로드 */}
@@ -181,32 +240,46 @@ export default function SubmitPage() {
                       PDF 업로드
                     </Button>
                     {file && (
-                      <span className="text-sm text-gray-300">
-                        {file.name}
-                      </span>
+                      <span className="text-sm text-gray-300">{file.name}</span>
                     )}
                   </div>
 
                   {/* File Metadata Display */}
                   {file && (
                     <div className="mt-4 p-4 rounded-lg bg-black/40 border border-purple-500/30">
-                      <h3 className="text-sm font-semibold text-purple-400 mb-3">파일 정보</h3>
+                      <h3 className="text-sm font-semibold text-purple-400 mb-3">
+                        파일 정보
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-400">파일명:</span>
-                          <span className="text-sm text-white font-medium">{file.name}</span>
+                          <span className="text-sm text-white font-medium">
+                            {file.name}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">파일 크기:</span>
-                          <span className="text-sm text-white">{formatFileSize(file.size)}</span>
+                          <span className="text-xs text-gray-400">
+                            파일 크기:
+                          </span>
+                          <span className="text-sm text-white">
+                            {formatFileSize(file.size)}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">파일 타입:</span>
-                          <span className="text-sm text-white">{file.type || "application/pdf"}</span>
+                          <span className="text-xs text-gray-400">
+                            파일 타입:
+                          </span>
+                          <span className="text-sm text-white">
+                            {file.type || "application/pdf"}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">최종 수정:</span>
-                          <span className="text-sm text-white">{formatDate(file.lastModified)}</span>
+                          <span className="text-xs text-gray-400">
+                            최종 수정:
+                          </span>
+                          <span className="text-sm text-white">
+                            {formatDate(file.lastModified)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -241,7 +314,7 @@ export default function SubmitPage() {
                   )}
 
                   {/* Upload Success Display */}
-                  {state === 'done' && uploadResult && (
+                  {state === "done" && uploadResult && (
                     <div className="mt-4 p-4 rounded-lg bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/50 backdrop-blur-sm">
                       <div className="flex items-center gap-3 mb-3">
                         <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -251,7 +324,10 @@ export default function SubmitPage() {
                       </div>
                       <div className="space-y-1 text-xs">
                         <div className="text-gray-400">
-                          Blob ID: <span className="text-green-300 font-mono">{uploadResult.blobId.slice(0, 20)}...</span>
+                          Blob ID:{" "}
+                          <span className="text-green-300 font-mono">
+                            {uploadResult.blobId.slice(0, 20)}...
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -275,7 +351,9 @@ export default function SubmitPage() {
                 {/* Submit Error Display */}
                 {hasSubmitError && submitError && (
                   <div className="p-4 rounded-lg bg-red-900/30 border border-red-500/50 backdrop-blur-sm">
-                    <p className="text-sm text-red-300">⚠️ {submitError.message}</p>
+                    <p className="text-sm text-red-300">
+                      ⚠️ {submitError.message}
+                    </p>
                   </div>
                 )}
 
@@ -291,19 +369,41 @@ export default function SubmitPage() {
                   </div>
                 )}
 
-
-
                 {/* 2. 본인 핸들 */}
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    2. 본인 핸들
-                  </label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className="text-sm font-medium text-white">
+                      2. 본인 핸들
+                    </label>
+                    {handleCheckStatus === "checking" && (
+                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>확인 중...</span>
+                      </div>
+                    )}
+                    {handleCheckStatus === "duplicate" && (
+                      <div className="flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded-md border border-red-500/20">
+                        <span>⚠️ 이미 사용 중인 핸들입니다</span>
+                      </div>
+                    )}
+                    {handleCheckStatus === "available" && (
+                      <div className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>사용 가능한 핸들입니다</span>
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="text"
-                    value={handle}
-                    onChange={(e) => setHandle(e.target.value)}
+                    value={handle ? `@${handle}` : ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // @ 제거하고 저장
+                      const withoutAt = value.replace(/^@+/, "");
+                      setHandle(withoutAt);
+                    }}
                     className="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                    placeholder="핸들을 입력하세요"
+                    placeholder="@핸들을 입력하세요"
                   />
                 </div>
 
@@ -316,7 +416,10 @@ export default function SubmitPage() {
                     {!analyzingResult ? (
                       <div className="flex items-center gap-3 text-gray-400 py-2">
                         <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
-                        <p className="text-sm">제출 시 업로드된 PDF를 AI가 분석하여 자동으로 직무, 기술 스택, 요약을 생성합니다.</p>
+                        <p className="text-sm">
+                          제출 시 업로드된 PDF를 AI가 분석하여 자동으로 직무,
+                          기술 스택, 요약을 생성합니다.
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -326,8 +429,12 @@ export default function SubmitPage() {
                             <Briefcase className="w-5 h-5" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-xs font-medium text-purple-300/70 uppercase tracking-wider mb-1">Target Position</h4>
-                            <p className="text-lg font-semibold text-white tracking-tight">{analyzingResult.position}</p>
+                            <h4 className="text-xs font-medium text-purple-300/70 uppercase tracking-wider mb-1">
+                              Target Position
+                            </h4>
+                            <p className="text-lg font-semibold text-white tracking-tight">
+                              {analyzingResult.position}
+                            </p>
                           </div>
                         </div>
 
@@ -337,7 +444,9 @@ export default function SubmitPage() {
                             <Code2 className="w-5 h-5" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-xs font-medium text-blue-300/70 uppercase tracking-wider mb-2">Tech Stack</h4>
+                            <h4 className="text-xs font-medium text-blue-300/70 uppercase tracking-wider mb-2">
+                              Tech Stack
+                            </h4>
                             <div className="flex flex-wrap gap-2">
                               {analyzingResult.techStack.map((tech, i) => (
                                 <span
@@ -357,7 +466,9 @@ export default function SubmitPage() {
                             <Sparkles className="w-5 h-5" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-xs font-medium text-emerald-300/70 uppercase tracking-wider mb-2">AI Analysis</h4>
+                            <h4 className="text-xs font-medium text-emerald-300/70 uppercase tracking-wider mb-2">
+                              AI Analysis
+                            </h4>
                             <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 leading-relaxed">
                               {analyzingResult.aiSummary}
                             </div>
@@ -372,14 +483,33 @@ export default function SubmitPage() {
                 <div className="flex justify-end pt-4">
                   <Button
                     onClick={handleSupplyClick}
-                    disabled={isSubmitting || isUploading || isAnalyzingPdf || !file || !handle.trim()}
-                    className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${isSubmitting || isUploading || isAnalyzingPdf || !file || !handle.trim()
-                      ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                      } text-white`}
+                    disabled={
+                      isSubmitting ||
+                      isUploading ||
+                      isAnalyzingPdf ||
+                      !file ||
+                      !handle.trim()
+                    }
+                    className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
+                      isSubmitting ||
+                      isUploading ||
+                      isAnalyzingPdf ||
+                      !file ||
+                      !handle.trim()
+                        ? "bg-gray-600 cursor-not-allowed opacity-50"
+                        : "bg-blue-600 hover:bg-blue-700"
+                    } text-white`}
                   >
-                    {(isSubmitting || isUploading || isAnalyzingPdf) && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {isAnalyzingPdf ? 'PDF 분석 중...' : isSubmitting ? '제출 중...' : isUploading ? '업로드 중...' : 'Supply'}
+                    {(isSubmitting || isUploading || isAnalyzingPdf) && (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    )}
+                    {isAnalyzingPdf
+                      ? "PDF 분석 중..."
+                      : isSubmitting
+                      ? "제출 중..."
+                      : isUploading
+                      ? "업로드 중..."
+                      : "Supply"}
                   </Button>
                 </div>
               </div>
