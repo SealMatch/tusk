@@ -10,3 +10,5 @@ export interface SearchQuery {
 }
 
 // ResumeResult는 resume.types.ts에서 export됨
+
+export type MatchStatus = "pending" | "accepted" | "rejected";
