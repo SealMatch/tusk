@@ -105,6 +105,7 @@ export class ApplicantsRepository {
         introduction,
         ai_summary as "aiSummary",
         blob_id as "blobId",
+        cap_id as "capId",
         seal_policy_id as "sealPolicyId",
         encryption_id as "encryptionId",
         access_price as "accessPrice",

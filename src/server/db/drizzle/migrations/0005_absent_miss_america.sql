@@ -1,1 +1,1 @@
-DROP TABLE "notifications" CASCADE;
+DROP TABLE IF EXISTS "notifications" CASCADE;

@@ -8,7 +8,7 @@ import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 function SkillStackPreview({
   skills,
@@ -38,7 +38,7 @@ function SkillStackPreview({
   );
 }
 
-export default function SearchResultsPage() {
+function SearchResultsPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
@@ -208,5 +208,17 @@ export default function SearchResultsPage() {
         blobId={selectedBlobId}
       />
     </div>
+  );
+}
+
+export default function SearchResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-gray-400">로딩 중...</div>
+      </div>
+    }>
+      <SearchResultsPageContent />
+    </Suspense>
   );
 }

@@ -1,1 +1,1 @@
-ALTER TABLE "applicants" ADD COLUMN "cap_id" text DEFAULT '';
+ALTER TABLE "applicants" ADD COLUMN IF NOT EXISTS "cap_id" text DEFAULT '';

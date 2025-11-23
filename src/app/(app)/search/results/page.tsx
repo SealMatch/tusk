@@ -8,7 +8,7 @@ import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function SkillStackPreview({
   skills,
@@ -38,7 +38,7 @@ function SkillStackPreview({
   );
 }
 
-export default function SearchResultsPage() {
+function SearchResultsPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
@@ -121,12 +121,13 @@ export default function SearchResultsPage() {
   const sortedResults = searchResultCards
     ? Object.values(
         searchResultCards.reduce((acc, item) => {
+          const blobId = item.applicant.blobId || item.applicant.id;
           // blobId가 없거나, 기존 항목보다 similarity가 높으면 업데이트
-          if (!acc[item.blobId] || acc[item.blobId].similarity < item.similarity) {
-            acc[item.blobId] = item;
+          if (!acc[blobId] || acc[blobId].similarity < item.similarity) {
+            acc[blobId] = item;
           }
           return acc;
-        }, {} as Record<string, SearchResultItem>)
+        }, {} as Record<string, SearchResultCard>)
       ).sort((a, b) => b.similarity - a.similarity)
     : [];
 
@@ -228,5 +229,17 @@ export default function SearchResultsPage() {
         blobId={selectedBlobId}
       />
     </div>
+  );
+}
+
+export default function SearchResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-gray-400">로딩 중...</div>
+      </div>
+    }>
+      <SearchResultsPageContent />
+    </Suspense>
   );
 }

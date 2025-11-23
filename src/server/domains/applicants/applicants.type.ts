@@ -1,3 +1,8 @@
+import { Applicant } from "@/server/db/schema/applicants.schema";
+
+// Re-export Applicant from schema
+export type { Applicant };
+
 /**
  * 지원자 생성 요청 파라미터
  */
@@ -21,11 +26,6 @@ export interface CreateApplicantParams {
 export interface CreateApplicantData extends CreateApplicantParams {
   embedding: number[];
 }
-
-/**
- * 지원자 조회 결과
- */
-export type Applicant = typeof applicants.$inferSelect;
 
 /**
  * 공개용 지원자 정보 (임베딩 제외)
