@@ -8,7 +8,7 @@ export const matches = pgTable(
     recruiterWalletAddress: text("recruiter_wallet_address").notNull(),
     applicantId: uuid("applicant_id")
       .notNull()
-      .references(() => applicants.id),
+      .references(() => applicants.id, { onDelete: "cascade" }),
     viewRequestId: text("view_request_id"),
     status: text("status").notNull().default("pending"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
