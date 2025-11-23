@@ -75,8 +75,8 @@ export default function SearchResultsPage() {
     }
   }, [isSuccess, recruiterWalletAddress, queryClient]);
 
-  const handleCardClick = (blobId: string) => {
-    router.push(`/resume/${blobId}`);
+  const handleCardClick = (applicantId: string) => {
+    router.push(`/resume/${applicantId}`);
   };
 
   // 검색 키워드와 매칭되는 스킬을 앞으로 정렬
@@ -143,8 +143,8 @@ export default function SearchResultsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedResults.map((result) => (
           <button
-            key={result.blobId}
-            onClick={() => handleCardClick(result.blobId)}
+            key={result.id}
+            onClick={() => handleCardClick(result.id)}
             className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[200px]"
           >
             {/* 직무 - 고정 높이 */}
