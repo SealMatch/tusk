@@ -16,9 +16,11 @@ import {
   Sparkles,
   Upload,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function SubmitPage() {
+  const router = useRouter();
   const [handle, setHandle] = useState("");
   const [handleCheckStatus, setHandleCheckStatus] = useState<
     "idle" | "checking" | "available" | "duplicate"
@@ -45,8 +47,6 @@ export default function SubmitPage() {
     // 파일 선택 시 자동으로 업로드 + PDF 분석 병렬 실행
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      console.log("[Submit] 파일 선택됨, 업로드 & PDF 분석 병렬 시작");
-
       // 병렬 실행
       const results = await Promise.allSettled([
         handleSubmit(selectedFile), // Walrus/Sui/Seal 업로드 (파일 직접 전달)
@@ -55,20 +55,10 @@ export default function SubmitPage() {
 
       const [uploadResultPromise, summaryResultPromise] = results;
 
-      // 업로드 실패 체크
-      if (uploadResultPromise.status === "rejected") {
-        console.error("[FileSelect] 업로드 실패:", uploadResultPromise.reason);
-      }
-
       // PDF 분석 성공 시 결과 저장
       if (summaryResultPromise.status === "fulfilled") {
         setAnalyzingResult(summaryResultPromise.value);
-        console.log("[FileSelect] PDF 분석 완료:", summaryResultPromise.value);
       } else {
-        console.error(
-          "[FileSelect] PDF 분석 실패:",
-          summaryResultPromise.reason
-        );
         setAnalyzingError(
           "PDF 분석 실패: " +
             (summaryResultPromise.reason instanceof Error
@@ -101,7 +91,6 @@ export default function SubmitPage() {
         setHandleCheckStatus("duplicate");
       }
     } catch (error) {
-      console.error("핸들 중복 체크 오류:", error);
       setHandleCheckStatus("duplicate");
     }
   };
@@ -120,6 +109,17 @@ export default function SubmitPage() {
     return () => clearTimeout(timer);
   }, [handle]);
 
+  // 제출 성공 시 메인 페이지로 이동
+  useEffect(() => {
+    if (submitSuccess) {
+      const timer = setTimeout(() => {
+        router.push("/");
+      }, 2000); // 2초 후 이동
+
+      return () => clearTimeout(timer);
+    }
+  }, [submitSuccess, router]);
+
   const [isAnalyzingPdf, setIsAnalyzingPdf] = useState(false);
   const [analyzingError, setAnalyzingError] = useState<string | null>(null);
   const [analyzingResult, setAnalyzingResult] = useState<{
@@ -136,7 +136,6 @@ export default function SubmitPage() {
     techStack: string[];
     aiSummary: string;
   }> => {
-    console.log("[PDF Analysis] 시작");
     setIsAnalyzingPdf(true);
 
     try {
@@ -149,7 +148,6 @@ export default function SubmitPage() {
       });
 
       const result = await response.json();
-      console.log("[PDF Analysis] 완료:", result);
 
       if (!result.success) {
         throw new Error(result.errorMessage || "PDF 분석에 실패했습니다.");
@@ -161,7 +159,6 @@ export default function SubmitPage() {
         error instanceof Error
           ? error.message
           : "PDF 분석 중 오류가 발생했습니다.";
-      console.error("[PDF Analysis] 오류:", error);
       setAnalyzingError(errorMessage);
       throw error;
     } finally {
@@ -169,31 +166,79 @@ export default function SubmitPage() {
     }
   };
 
-  const handleSupplyClick = async () => {
-    // 업로드와 PDF 분석은 이미 완료되었으므로,
-    // 최종 제출만 수행 (uploadResult, analyzingResult 사용)
-    console.log("[Supply] 최종 제출 시작");
-    console.log("[Supply] 업로드 결과:", uploadResult);
-    console.log("[Supply] PDF 분석 결과:", analyzingResult);
-    console.log("[Supply] 핸들:", handle);
+  // 사용자 친화적 에러 메시지 변환
+  const getFriendlyErrorMessage = (errorMessage: string): string => {
+    // 파일 업로드 관련 에러
+    if (errorMessage.includes("File size must be less than")) {
+      return "파일 크기가 10MB를 초과했습니다. 더 작은 파일을 선택해주세요.";
+    }
+    if (errorMessage.includes("No file selected")) {
+      return "파일을 선택해주세요.";
+    }
+    if (errorMessage.includes("WAL 토큰이 부족합니다")) {
+      return "WAL 토큰이 부족합니다. 지갑에 WAL 토큰을 충전해주세요.";
+    }
+    if (errorMessage.includes("접근 정책 생성 실패")) {
+      return "파일 접근 정책 생성에 실패했습니다. 다시 시도해주세요.";
+    }
+    if (errorMessage.includes("파일 암호화 실패")) {
+      return "파일 암호화에 실패했습니다. 다시 시도해주세요.";
+    }
+    if (errorMessage.includes("Walrus 업로드 실패")) {
+      return "파일 저장소 업로드에 실패했습니다. 네트워크 연결을 확인하고 다시 시도해주세요.";
+    }
+    if (errorMessage.includes("Upload failed")) {
+      return "파일 업로드에 실패했습니다. 다시 시도해주세요.";
+    }
 
-    // TODO: 실제 DB 제출 로직 구현
-    // submitApplicantAsync()를 호출하여 데이터베이스에 저장
-    // 현재는 로그만 출력
+    // PDF 분석 관련 에러
+    if (errorMessage.includes("PDF 분석 실패")) {
+      return "이력서 분석에 실패했습니다. PDF 파일이 올바른지 확인해주세요.";
+    }
+
+    // DB 제출 관련 에러
+    if (
+      errorMessage.includes("wallet_address") ||
+      errorMessage.includes("duplicate key") ||
+      errorMessage.includes("unique constraint")
+    ) {
+      return "이미 등록된 지갑 주소입니다. 다른 지갑으로 시도해주세요.";
+    }
+    if (errorMessage.includes("handle") && errorMessage.includes("unique")) {
+      return "이미 사용 중인 핸들입니다. 다른 핸들을 입력해주세요.";
+    }
+
+    // 기본 에러 메시지
+    return errorMessage;
+  };
+
+  const handleSupplyClick = async () => {
+    // 필수 데이터 검증
+    if (!uploadResult || !analyzingResult || !currentAccount?.address) {
+      setAnalyzingError("필수 데이터가 누락되었습니다. 다시 시도해주세요.");
+      return;
+    }
 
     try {
       resetSubmit();
 
-      // 최종 제출 로직이 구현될 위치
-      // await submitApplicantAsync({
-      //   handle,
-      //   uploadResult,
-      //   analyzingResult,
-      // });
-
-      console.log("[Supply] ✅ 제출 준비 완료 (실제 제출 로직은 TODO)");
+      // DB에 지원자 정보 저장
+      await submitApplicantAsync({
+        handle,
+        walletAddress: currentAccount.address,
+        position: analyzingResult.position,
+        techStack: analyzingResult.techStack,
+        aiSummary: analyzingResult.aiSummary,
+        introduction: "",
+        blobId: uploadResult.blobId,
+        sealPolicyId: uploadResult.policyObjectId,
+        encryptionId: uploadResult.encryptionId,
+        capId: uploadResult.capId,
+        isJobSeeking: true,
+      });
     } catch (error) {
-      console.error("[Supply] 제출 오류:", error);
+      // 에러는 useSubmitApplicant 훅에서 처리됨
+      console.error(error);
     }
   };
 
@@ -240,8 +285,6 @@ export default function SubmitPage() {
     return 70;
   };
 
-  const overallProgress = getOverallProgress();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-4 sm:p-8">
       <div className="mx-auto max-w-4xl">
@@ -255,7 +298,7 @@ export default function SubmitPage() {
           <div className="overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-xl shadow-2xl">
             <div className="p-6 sm:p-8">
               <h2 className="mb-6 text-2xl font-semibold text-white">
-                Apply Form
+                Register Form
               </h2>
 
               <div className="space-y-6">
@@ -286,12 +329,6 @@ export default function SubmitPage() {
                         </span>
                       )}
                     </div>
-                    {/* {(isUploading || isAnalyzingPdf) && (
-                      <ProgressBar
-                        value={overallProgress}
-                        className="w-[30%]"
-                      />
-                    )} */}
                   </div>
 
                   {/* File Metadata Display */}
@@ -426,7 +463,9 @@ export default function SubmitPage() {
                   {/* Error Display */}
                   {error && (
                     <div className="mt-4 p-4 rounded-lg bg-red-900/30 border border-red-500/50 backdrop-blur-sm">
-                      <p className="text-sm text-red-300">⚠️ {error}</p>
+                      <p className="text-sm text-red-300">
+                        ⚠️ {getFriendlyErrorMessage(error)}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -434,7 +473,9 @@ export default function SubmitPage() {
                 {/* PDF Analysis Error Display */}
                 {analyzingError && (
                   <div className="p-4 rounded-lg bg-red-900/30 border border-red-500/50 backdrop-blur-sm">
-                    <p className="text-sm text-red-300">⚠️ {analyzingError}</p>
+                    <p className="text-sm text-red-300">
+                      ⚠️ {getFriendlyErrorMessage(analyzingError)}
+                    </p>
                   </div>
                 )}
 
@@ -442,19 +483,29 @@ export default function SubmitPage() {
                 {hasSubmitError && submitError && (
                   <div className="p-4 rounded-lg bg-red-900/30 border border-red-500/50 backdrop-blur-sm">
                     <p className="text-sm text-red-300">
-                      ⚠️ {submitError.message}
+                      ⚠️ {getFriendlyErrorMessage(submitError.message)}
                     </p>
                   </div>
                 )}
 
-                {/* Submit Success Display */}
+                {/* Submit Success Modal */}
                 {submitSuccess && (
-                  <div className="p-4 rounded-lg bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/50 backdrop-blur-sm">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-400" />
-                      <span className="text-sm font-semibold text-green-300">
-                        지원이 성공적으로 등록되었습니다! 🎉
-                      </span>
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="mx-4 max-w-md w-full p-8 rounded-2xl bg-gradient-to-br from-green-900/90 to-emerald-900/90 border border-green-500/50 shadow-2xl animate-in fade-in zoom-in duration-300">
+                      <div className="flex flex-col items-center gap-4 text-center">
+                        <div className="p-4 rounded-full bg-green-500/20">
+                          <CheckCircle2 className="w-12 h-12 text-green-400" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-white">
+                          등록 완료!
+                        </h3>
+                        <p className="text-green-300">
+                          지원이 성공적으로 등록되었습니다.
+                        </p>
+                        <p className="text-sm text-green-400/80">
+                          잠시 후 메인 페이지로 이동합니다...
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -577,15 +628,19 @@ export default function SubmitPage() {
                       isSubmitting ||
                       state !== "done" ||
                       !uploadResult ||
+                      !analyzingResult ||
                       !handle.trim() ||
-                      handleCheckStatus !== "available"
+                      handleCheckStatus !== "available" ||
+                      !currentAccount?.address
                     }
                     className={`px-8 py-3 rounded-lg font-medium flex items-center gap-2 ${
                       isSubmitting ||
                       state !== "done" ||
                       !uploadResult ||
+                      !analyzingResult ||
                       !handle.trim() ||
-                      handleCheckStatus !== "available"
+                      handleCheckStatus !== "available" ||
+                      !currentAccount?.address
                         ? "bg-gray-600 cursor-not-allowed opacity-50"
                         : "bg-blue-600 hover:bg-blue-700"
                     } text-white`}
@@ -593,7 +648,7 @@ export default function SubmitPage() {
                     {isSubmitting && (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     )}
-                    {isSubmitting ? "제출 중..." : "Supply"}
+                    {isSubmitting ? "제출 중..." : "Register"}
                   </Button>
                 </div>
               </div>
