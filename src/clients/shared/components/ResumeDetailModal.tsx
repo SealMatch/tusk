@@ -1,7 +1,7 @@
 "use client";
 
 import { usePdfDownload, useRequestAccess } from "@/clients/shared/hooks";
-import { useSelectedApplicantStore } from "@/clients/shared/stores";
+import { useSearchResultStore } from "@/clients/shared/stores";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Code2, Sparkles, X } from "lucide-react";
@@ -24,8 +24,13 @@ export function ResumeDetailModal({
 
   const companyAddress = currentAccount?.address;
 
-  const { selectedApplicant, selectedApplicantMatchInfo: match } =
-    useSelectedApplicantStore();
+  const {
+    selectedApplicant,
+    selectedApplicantMatchInfo: match,
+    setSelectedApplicantMatchInfo,
+    searchResultList,
+    setSearchResultList,
+  } = useSearchResultStore();
 
   useEffect(() => {
     if (!selectedApplicant && isOpen) {
@@ -71,10 +76,24 @@ export function ResumeDetailModal({
 
       const matchResult = await matchResponse.json();
       console.log("Match created successfully:", matchResult);
+      setSelectedApplicantMatchInfo(matchResult.data);
+
+      // Update searchResultList with new match info
+      const updatedList = searchResultList.map((item) =>
+        item.applicant.id === selectedApplicant.id
+          ? { ...item, match: matchResult.data }
+          : item
+      );
+      setSearchResultList(updatedList);
 
       // 3. Invalidate queries to refresh status
       queryClient.invalidateQueries({
         queryKey: ["viewRequestStatus", companyAddress, blobId],
+      });
+
+      // 4. Invalidate search results to re-fetch with updated match info
+      queryClient.invalidateQueries({
+        queryKey: ["selected-history-results"],
       });
     } catch (e) {
       console.error("Permission request failed", e);

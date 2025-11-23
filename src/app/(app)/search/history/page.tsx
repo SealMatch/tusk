@@ -2,13 +2,13 @@
 
 import { ResumeDetailModal, SkillBadge } from "@/clients/shared/components";
 import { customAxios } from "@/clients/shared/libs/axios.libs";
-import { useSelectedApplicantStore } from "@/clients/shared/stores";
+import { useSearchResultStore } from "@/clients/shared/stores";
 import { SearchResultItem } from "@/server/domains/applicants/applicants.type";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function SkillStackPreview({
   skills,
@@ -42,6 +42,12 @@ function SearchResultsPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
+  const {
+    searchResultList,
+    setSearchResultList,
+    setSelectedApplicant,
+    setSelectedApplicantMatchInfo,
+  } = useSearchResultStore();
   const historyId = searchParams.get("historyId");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,7 +73,11 @@ function SearchResultsPageContent() {
     enabled: !!historyId && !!recruiterWalletAddress,
   });
 
-  const { setSelectedApplicant } = useSelectedApplicantStore();
+  useEffect(() => {
+    if (searchResultCards) {
+      setSearchResultList(searchResultCards);
+    }
+  }, [searchResultCards, setSearchResultList]);
 
   const handleCardClick = (applicant: SearchResultItem) => {
     if (!applicant.blobId) return;
@@ -141,7 +151,12 @@ function SearchResultsPageContent() {
         {sortedResults.map((result) => (
           <button
             key={result.applicant.id}
-            onClick={() => handleCardClick({ ...result.applicant, similarity: result.similarity })}
+            onClick={() =>
+              handleCardClick({
+                ...result.applicant,
+                similarity: result.similarity,
+              })
+            }
             disabled={!result.applicant.blobId}
             className="bg-[#2f2f2f] rounded-xl p-5 text-left hover:bg-[#3a3a3a] transition-colors border border-gray-700 hover:border-gray-600 flex flex-col h-[240px] relative disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -213,11 +228,13 @@ function SearchResultsPageContent() {
 
 export default function SearchResultsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400">로딩 중...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-gray-400">로딩 중...</div>
+        </div>
+      }
+    >
       <SearchResultsPageContent />
     </Suspense>
   );

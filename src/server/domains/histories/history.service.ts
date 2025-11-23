@@ -3,7 +3,7 @@ import { Result } from "@/server/shared/types/result.type";
 import { HistoryRepository, historyRepository } from "./history.repository";
 
 import { applicantsRepository } from "../applicants/applicants.repository";
-import { Applicant, PublicApplicant } from "../applicants/applicants.type";
+import { PublicApplicant } from "../applicants/applicants.type";
 import { matchRepository } from "../match/match.repository";
 import { SearchResultCard, SearchResultItem } from "./history.type";
 
@@ -78,11 +78,6 @@ class HistoryService {
     recruiterWalletAddress: string
   ): Promise<Result<History[]>> {
     try {
-      console.log(
-        "🔍 Fetching search histories for recruiter:",
-        recruiterWalletAddress
-      );
-
       const histories =
         await this.historyRepository.findSearchHistoriesByRecruiter(
           recruiterWalletAddress
@@ -116,8 +111,6 @@ class HistoryService {
    */
   async getHistoryById(historyId: string): Promise<Result<History>> {
     try {
-      console.log("🔍 Fetching search history by ID:", historyId);
-
       const history = await this.historyRepository.findById(historyId);
 
       if (!history) {
@@ -157,11 +150,6 @@ class HistoryService {
     results: SearchResultItem[]
   ): Promise<Result<SearchResultCard[]>> {
     try {
-      console.log("🔍 Fetching search result cards:", {
-        recruiter: recruiterWalletAddress,
-        resultCount: results.length,
-      });
-
       // 1. Extract applicant IDs
       const applicantIds = results.map((item) => item.applicantId);
 
@@ -183,12 +171,14 @@ class HistoryService {
       );
 
       // 3. Construct result cards
-      // Strategy: Fetch from DB first (to ensure we get existing data). 
+      // Strategy: Fetch from DB first (to ensure we get existing data).
       // If not found in DB, fall back to snapshot (for deleted applicants).
 
       // Fetch all applicants from DB
-      const fetchedApplicants = await applicantsRepository.findByIds(applicantIds);
-      const applicantsMap = new Map(fetchedApplicants.map(a => [a.id, a]));
+      const fetchedApplicants = await applicantsRepository.findByIds(
+        applicantIds
+      );
+      const applicantsMap = new Map(fetchedApplicants.map((a) => [a.id, a]));
 
       const resultCards: SearchResultCard[] = results
         .map((item) => {

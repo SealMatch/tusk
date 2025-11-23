@@ -2,7 +2,7 @@
 
 import { ResumeDetailModal, SkillBadge } from "@/clients/shared/components";
 import { customAxios } from "@/clients/shared/libs/axios.libs";
-import { useSelectedApplicantStore } from "@/clients/shared/stores";
+import { useSearchResultStore } from "@/clients/shared/stores";
 import { SearchResultCard } from "@/server/domains/histories/history.type";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,6 +41,12 @@ function SearchResultsPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const recruiterWalletAddress = useCurrentAccount()?.address;
+  const {
+    searchResultList,
+    setSearchResultList,
+    setSelectedApplicant,
+    setSelectedApplicantMatchInfo,
+  } = useSearchResultStore();
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +56,6 @@ function SearchResultsPageContent() {
     data: searchResultCards,
     isLoading,
     error,
-    isSuccess,
   } = useQuery({
     queryKey: ["selected-history-results", query, recruiterWalletAddress],
     queryFn: async () => {
@@ -63,7 +68,9 @@ function SearchResultsPageContent() {
           "X-Wallet-Address": recruiterWalletAddress,
         },
       });
-      return response.data.data.results as SearchResultCard[];
+      const searchResultCards = response.data.data
+        .results as SearchResultCard[];
+      return searchResultCards;
     },
     enabled: !!query,
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
@@ -71,15 +78,10 @@ function SearchResultsPageContent() {
 
   // 검색 성공 시 이력 목록 갱신
   useEffect(() => {
-    if (isSuccess && recruiterWalletAddress) {
-      queryClient.invalidateQueries({
-        queryKey: ["search-history", recruiterWalletAddress],
-      });
+    if (searchResultCards) {
+      setSearchResultList(searchResultCards);
     }
-  }, [isSuccess, recruiterWalletAddress, queryClient]);
-
-  const { setSelectedApplicant, setSelectedApplicantMatchInfo } =
-    useSelectedApplicantStore();
+  }, [searchResultCards, setSearchResultList]);
 
   const handleCardClick = (selectedResult: SearchResultCard) => {
     if (!selectedResult) return;
@@ -123,9 +125,9 @@ function SearchResultsPageContent() {
   };
 
   // 중복 제거 + similarity 기준 정렬
-  const sortedResults = searchResultCards
+  const sortedResults = searchResultList
     ? Object.values(
-        searchResultCards.reduce((acc, item) => {
+        searchResultList.reduce((acc, item) => {
           const blobId = item.applicant.blobId || item.applicant.id;
           // blobId가 없거나, 기존 항목보다 similarity가 높으면 업데이트
           if (!acc[blobId] || acc[blobId].similarity < item.similarity) {
