@@ -14,6 +14,7 @@ export interface CreateSearchHistoryParams {
   recruiterWalletAddress: string;
   query: string;
   results: SearchResultItem[];
+  historyId?: string; // Optional unique ID to prevent duplicates
 }
 
 /**
@@ -34,14 +35,32 @@ class HistoryService {
     params: CreateSearchHistoryParams
   ): Promise<Result<History>> {
     try {
+      const historyId = params.historyId || crypto.randomUUID();
+
       console.log("💾 Creating search history:", {
         recruiter: params.recruiterWalletAddress,
         query: params.query,
         resultCount: params.results.length,
+        historyId,
       });
 
+      // Check if history with this ID already exists (prevent duplicates)
+      if (params.historyId) {
+        const existingHistory = await this.historyRepository.findById(
+          params.historyId
+        );
+
+        if (existingHistory) {
+          console.log("⚠️ History already exists, skipping:", historyId);
+          return {
+            success: true,
+            data: existingHistory,
+          };
+        }
+      }
+
       const history = await this.historyRepository.create({
-        id: crypto.randomUUID(),
+        id: historyId,
         recruiterWalletAddress: params.recruiterWalletAddress,
         query: params.query,
         result: params.results,

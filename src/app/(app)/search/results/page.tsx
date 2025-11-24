@@ -59,6 +59,9 @@ function SearchResultsPageContent() {
   } = useQuery({
     queryKey: ["selected-history-results", query, recruiterWalletAddress],
     queryFn: async () => {
+      // Generate unique historyId for this search to prevent duplicate saves
+      const historyId = crypto.randomUUID();
+
       const response = await customAxios.get(`/api/v1/search`, {
         params: {
           query: query,
@@ -66,6 +69,7 @@ function SearchResultsPageContent() {
         },
         headers: {
           "X-Wallet-Address": recruiterWalletAddress,
+          "X-History-Id": historyId,
         },
       });
       const searchResultCards = response.data.data
@@ -73,6 +77,11 @@ function SearchResultsPageContent() {
       return searchResultCards;
     },
     enabled: !!query,
+    staleTime: 5 * 60 * 1000, // 5 minutes - prevent unnecessary refetches
+    gcTime: 10 * 60 * 1000, // 10 minutes cache time
+    refetchOnMount: false, // Don't refetch on component mount
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    retry: 1, // Only retry once on failure (default is 3)
   });
 
   useEffect(() => {
@@ -81,10 +90,10 @@ function SearchResultsPageContent() {
 
       // 검색 성공 후 히스토리 갱신
       queryClient.invalidateQueries({
-        queryKey: ["search-history"],
+        queryKey: ["search-history", recruiterWalletAddress],
       });
     }
-  }, [searchResultCards, setSearchResultList, queryClient]);
+  }, [searchResultCards, setSearchResultList, queryClient, recruiterWalletAddress]);
 
   const handleCardClick = (selectedResult: SearchResultCard) => {
     if (!selectedResult) return;
