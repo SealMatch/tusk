@@ -4,6 +4,7 @@ import { WalletProvider } from "@/clients/shared/providers/wallet-provider";
 import "@mysten/dapp-kit/dist/index.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { MobileWarningWrapper } from "./MobileWarningWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,14 +31,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0D1117]`}
       cz-shortcut-listen="true">
         <TanstackQueryProvider>
           <SuiClientProvider>
             <WalletProvider>
-              <div className="min-h-screen min-w-screen flex flex-col">
-                {children}
-              </div>
+              <MobileWarningWrapper>
+                <div className="min-h-screen min-w-screen flex flex-col">
+                  {children}
+                </div>
+              </MobileWarningWrapper>
             </WalletProvider>
           </SuiClientProvider>
         </TanstackQueryProvider>
