@@ -145,13 +145,17 @@ export async function GET(
       };
     });
 
-    if (recruiterWalletAddress) {
+    // Generate unique historyId from request to prevent duplicate saves
+    const historyId = request.headers.get("x-history-id");
+
+    if (recruiterWalletAddress && historyId) {
       // Save history in background (don't await)
       historyService
         .createSearchHistory({
           recruiterWalletAddress,
           query: query.trim(),
           results: searchResultItems,
+          historyId, // Pass historyId to prevent duplicates
         })
         .catch((err) => {
           console.warn("⚠️ Failed to save search history:", err);
